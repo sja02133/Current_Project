@@ -44,6 +44,7 @@ CString string_format(const CString& format, Args ... args)
 	return CString(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }
 
+/*
 void WINAPI recv_data(void *arg)
 {
 	printf("수신 시작\n");
@@ -78,17 +79,19 @@ void WINAPI recv_data(void *arg)
 			else {
 				if (iter->second.errorCode == 0)
 					c_info->pTCP_SOCKET->Send_Response(&iter->second, false);
-				else
-					c_info->pTCP_SOCKET->Send_Fail(iter->second,iter->second.errorCode);
+				else {
+					//c_info->pTCP_SOCKET->Send_Fail(iter->second,iter->second.errorCode);
+				}
 			}
 		}
 		else if (n == -1)
 			break;
 	}
 }
-
+*/
 void WINAPI Thread_Accept(void* arg)
 {
+
 	fd_set reads, temps;
 	CLIENT_INFO* c_info = (CLIENT_INFO*)arg;
 
@@ -165,9 +168,14 @@ void WINAPI Thread_Recv(void* arg)
 			// read
 			WCHAR buf[MAX_WCHAR_SIZE] = { 0, };
 			int len = recv(c_info->cSock, (char*)buf, MAX_WCHAR_SIZE, 0);
-			if (len > 0) {
-				c_info->pTCP_SOCKET->RecvData(buf, len, *c_info);
+			if (len > 0 && c_info->pTCP_SOCKET->server_HANDLE != NULL) {
+				// 서버
+				c_info->pTCP_SOCKET->RecvData_Server(buf, len, *c_info);
 			}
+			//else if (len > 0 && c_info->pTCP_SOCKET->server_HANDLE == NULL) {
+			//	// 클라이언트
+			//	c_info->pTCP_SOCKET->RecvData_Client(buf, len, *c_info);
+			//}
 			else if (len < 0) {
 				// lose connection
 				return;
@@ -259,11 +267,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 	}
 
 	if (checkRecv) {
-		// Server
-		WCHAR firsWCHAR = '1';
-		CLIENT_INFO temp;
-		//this->RecvData(&firsWCHAR, 1,temp);
-		
+		// Server	
 		while (true) {
 			SOCKET client_sock = accept(this->listener, nullptr, nullptr);
 			if (client_sock == INVALID_SOCKET) {
@@ -271,24 +275,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 				WSACleanup();
 				return false;
 			}
-			printf("Accept!\n");
-
-			//client_info* c_info = new client_info;
-			//memcpy(&c_info->cSock, &client_sock, sizeof(SOCKET));
-			//int addrLen = sizeof(c_info->clientAddr);
-			//getpeername(c_info->cSock, (sockaddr*)&c_info->clientAddr, &addrLen);
-			//char* clientIP = inet_ntoa(c_info->clientAddr.sin_addr);
-			//WCHAR WCHAR_clientIP[30] = { 0, };
-			//MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, clientIP, strlen(clientIP), WCHAR_clientIP, 256);
-			//int clientPort = ntohs(c_info->clientAddr.sin_port);
-			//CString portNum = _T("");
-			//portNum.Format(_T("%d"), clientPort);
-			//CString key = CString(WCHAR_clientIP) + _T(":") + portNum;
-			//memcpy(&c_info->ipPort[0], key.GetBuffer(), key.GetLength()*2);
-			//c_info->checkRecv = true;
-			//this->client_map.insert(std::make_pair(key, *c_info));		
-			//c_info->pTCP_SOCKET = this;
-			
+			//printf("Accept!\n");
 			this->clientInfo = new CLIENT_INFO;
 			memcpy(&this->clientInfo->cSock, &client_sock, sizeof(SOCKET));
 			int addrLen = sizeof(this->clientInfo->clientAddr);
@@ -328,26 +315,6 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 			return false;
 
 		Sleep(DELAY_TIME);
-
-		//client_info* c_info = new client_info;
-		//c_info->cSock = this->listener;
-		//int addrLen = sizeof(c_info->clientAddr);
-		//getpeername(c_info->cSock, (sockaddr*)&c_info->clientAddr, &addrLen);
-		//char* clientIP = inet_ntoa(c_info->clientAddr.sin_addr);
-		//WCHAR WCHAR_clientIP[30] = { 0, };
-		//MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, clientIP, strlen(clientIP), WCHAR_clientIP, 256);
-		//int clientPort = ntohs(c_info->clientAddr.sin_port);
-		//CString portNum = _T("");
-		//portNum.Format(_T("%d"), clientPort);
-		//CString key = CString(WCHAR_clientIP) + _T(":") + portNum;
-		//memcpy(&c_info->ipPort[0], key.GetBuffer(), key.GetLength()*2);
-		//c_info->checkSend = true;
-		//this->mapKey = key;
-		//c_info->pTCP_SOCKET = this;
-		//this->client_map.insert(std::make_pair(key, *c_info));
-
-		//c_info->pTCP_SOCKET = 0;
-		//delete c_info;
 
 		this->clientInfo = new CLIENT_INFO;
 		memcpy(&this->clientInfo->cSock, &this->listener, sizeof(SOCKET));
@@ -539,3 +506,134 @@ void CTCP_SOCKET::GetServerErrorMsg(CString& str, CLIENT_INFO& c_info)
 
 	free(errorMsg);
 }
+
+/*
+bool CTCP_SOCKET::RecvData(WCHAR* data, int& len, CLIENT_INFO& c_info)
+{
+	WCHAR firstByte = data[0];
+
+	bool checkResult = false;
+
+	if (c_info.pTCP_SOCKET->checkFirstStart == true && c_info.pTCP_SOCKET->client_HANDLE == NULL) {
+		// 서버 최초 실행
+		Recv_DeleteLoginSessionAll();
+		c_info.pTCP_SOCKET->checkFirstStart = false;
+	}
+
+	switch (firstByte) {
+	case 'L':
+	{
+		// login 요청
+		if (Recv_LoginRequest(data, len, c_info))
+			checkResult = true;
+		else
+			checkResult = false;
+		break;
+	}
+	case 'I':
+	{
+		// ID 중복 검사
+		if (Recv_IDExist(data, len, c_info))
+			checkResult = true;
+		else
+			checkResult = false;
+		break;
+	}
+	case 'M':
+		// 회원가입 요청
+		if (Recv_MembershipJoin(data, len, c_info)) {
+			//memset(c_info.ID, 0, strlen(c_info.ID));
+			wmemset(c_info.ID, 0, _tcsclen(c_info.ID));
+			return true;
+		}
+		else
+			return false;
+		break;
+	case 'O':
+		// 로그아웃 세션 제거
+		if (Recv_LoginOutRequest(data, len, c_info)) {
+			printf("%s 로그아웃 성공\n", c_info.ID);
+			wmemset(c_info.ID, 0, _tcsclen(c_info.ID));
+			return true;
+		}
+		else
+			return false;
+		break;
+	case 'A':
+		// 로그인 세션 중복 검사
+		if (Recv_AlreadyLoginSessionExist(data, len, c_info)) {
+			return true;
+		}
+		else {
+			//Send_Fail(c_info, 100);	//코드는 현재 임시...
+			return false;
+		}
+		break;
+	case 'C':
+		// 현재 로그인 중인 세션 리스트 송신
+		if (Recv_LoginSessionList(data, len, c_info)) {
+			return true;
+		}
+		else
+			return false;
+		break;
+	case 'S':
+		// 현재 로그인 중인 세션 리스트 수신
+		return true;
+		break;
+	default:
+		return true;
+		break;
+	}
+
+	if (c_info.checkResponse == true && checkResult == true) {
+		// response(true)
+		Send_Response(&c_info, true);
+	}
+	else if (c_info.checkResponse == true && checkResult == false) {
+		// response(false)
+		if (c_info.errorCode == 0)
+			Send_Response(&c_info, false);
+		else
+			Send_Message(&c_info);
+	}
+	else if (c_info.checkResponse == false && checkResult == false) {
+		// message(error code)
+		Send_Message(&c_info);
+	}
+	else {
+		// 코드 수정 필요..
+		Send_Response(&c_info, false);
+	}
+
+	return true;
+}
+*/
+
+bool CTCP_SOCKET::SendData(WCHAR type, WCHAR* data, int len)
+{
+	//std::map<CString, client_info>::iterator iter_c_info;
+	//if (!pTCP_SOCKET->mapKey.IsEmpty()) {
+	//	iter_c_info = pTCP_SOCKET->client_map.find(pTCP_SOCKET->mapKey);
+	//	if (iter_c_info != pTCP_SOCKET->client_map.end())
+	//		pTCP_SOCKET->SetInitialize_CLIENT_INFO(pTCP_SOCKET->client_map.find(pTCP_SOCKET->mapKey));
+	//}
+
+	this->SetInitialize_CLIENT_INFO(this->clientInfo);
+
+	if (this->mapKey.IsEmpty())
+		return false;
+
+	//if (MakeSendData(type, data, len, pTCP_SOCKET,iter_c_info->second.cSock)) {
+	//	return true;
+	//}
+	//else
+	//	return false;
+
+	if (MakeSendData(type, data, len, this, this->clientInfo->cSock)) {
+		return true;
+	}
+	else
+		return false;
+}
+

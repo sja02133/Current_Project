@@ -159,6 +159,7 @@
     <ClInclude Include="login.h" />
     <ClInclude Include="PODBC.h" />
     <ClInclude Include="POLEDB.h" />
+    <ClInclude Include="Server_TCP.h" />
     <ClInclude Include="tcp\tcpSocket.h" />
     <ClInclude Include="tcp\tcp_ManageMent.h" />
   </ItemGroup>

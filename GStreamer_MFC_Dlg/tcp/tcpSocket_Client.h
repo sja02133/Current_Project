@@ -10,10 +10,11 @@
 #include <process.h>
 
 #include "../POLEDB.h"
-
 #include "../errorCode.h"
 
 #include <atlstr.h>
+
+#include "../Server_TCP.h"
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -21,7 +22,6 @@ class CTCP_SOCKET;
 
 constexpr auto SERVER_PORT = 7000;
 constexpr auto SERVER_IP = "192.168.2.239";
-//constexpr auto SERVER_IP = "221.149.111.230";
 //constexpr auto SERVER_IP = "127.0.0.1";
 
 #define SOCKET_CONNECT_TIMEOUT 300	// Client일 경우 Connect를 SOCKET_CONNECT_TIMEOUT 간격으로 10번 실행하고 안되면 connect 실패 처리한다.
@@ -58,34 +58,43 @@ public:
 
 class CRECV_CONTROL {
 public:
+	CRECV_CONTROL();
 	// 2023.09.25 수정사항. 마지막에 true를 반환 할 때 총 문자열의 길이를 len에 할당해야한다.
 
-	bool RecvData(WCHAR* data, int &len, CLIENT_INFO& c_info);
-	bool Recv_Response(WCHAR* data, int &len, CLIENT_INFO& c_info);
-	bool Recv_Response(WCHAR* data, int &len);
+	// 서버 자체
 	bool Recv_DeleteLoginSessionAll();
-	bool Recv_LoginRequest(WCHAR* data, int &len, CLIENT_INFO& c_info);
-	bool Recv_LoginResponse(WCHAR* data, int &len, CLIENT_INFO& c_info);
-	bool Recv_IDExist(WCHAR* data, int &len, CLIENT_INFO& c_info);
-	bool Recv_MembershipJoin(WCHAR* data, int &len, CLIENT_INFO& c_info);
-	bool Recv_LoginOutRequest(WCHAR* data,int &len, CLIENT_INFO& c_info);
-	bool Recv_AlreadyLoginSessionExist(WCHAR* data, int &len, CLIENT_INFO& c_info);
-	bool Recv_LoginSessionList(WCHAR* data, int &len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_LoginRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_IDExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_MembershipJoin(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_LoginOutRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_LoginSessionList(WCHAR* data, int& len, CLIENT_INFO& c_info);
+};
+
+class CCLIENT_CONTROL {
 public:
-	bool Send_Message(CLIENT_INFO* c_info);
-	bool Send_Response(CLIENT_INFO* c_info, bool success);
-	bool Send_Fail(CLIENT_INFO& c_info);
+	bool Recv_Response(WCHAR* data, int& len, CLIENT_INFO& c_info);
+public:
 	bool Send_Fail(CLIENT_INFO& c_info, int code);
 	bool MakeErrorCode(int code, CLIENT_INFO& c_info);
 	bool MakeErrorExistMsg(int code, CLIENT_INFO& c_info);
-	bool Send_Fail(CLIENT_INFO& c_info, WCHAR* msg);
-	bool Send_Fail(CLIENT_INFO& c_info, int code, WCHAR* msg);
 	bool Set_ErrorMsg(CLIENT_INFO& c_info, int code);
 };
 
 class CSEND_CONTROL {
 public:
-	bool SendData(WCHAR type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
 	bool MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET,SOCKET cSock);
 	bool SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
 public:
@@ -97,7 +106,12 @@ public:
 	WCHAR* MakeRequestLoginSession(WCHAR type, WCHAR* data, int& len);
 };
 
-class CTCP_SOCKET : public CMAP_CONTROL_CUSTOM, public CRECV_CONTROL, public CSEND_CONTROL {
+
+
+class CTCP_SOCKET : public CMAP_CONTROL_CUSTOM,
+	public CSEND_CONTROL,
+	public CRECV_CONTROL,
+	public CCLIENT_CONTROL{
 public:
 	CTCP_SOCKET()
 	{
@@ -135,4 +149,7 @@ public:
 	bool checkFirstStart = true;
 	CLIENT_INFO* clientInfo;
 
+	// 코드 수정...
+	bool RecvData(WCHAR* data, int& len, CLIENT_INFO& c_info);
+	bool SendData(WCHAR type, WCHAR* data, int len);
 };

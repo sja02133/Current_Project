@@ -1,4 +1,4 @@
-#include "tcpSocket.h"
+#include "tcpSocket_Client.h"
 #include <sstream>
 #include "../byteControl.h"
 
@@ -44,6 +44,7 @@ CString string_format(const CString& format, Args ... args)
 	return CString(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }
 
+/*
 void WINAPI recv_data(void *arg)
 {
 	printf("수신 시작\n");
@@ -87,7 +88,7 @@ void WINAPI recv_data(void *arg)
 			break;
 	}
 }
-
+*/
 void WINAPI Thread_Accept(void* arg)
 {
 
@@ -168,7 +169,8 @@ void WINAPI Thread_Recv(void* arg)
 			WCHAR buf[MAX_WCHAR_SIZE] = { 0, };
 			int len = recv(c_info->cSock, (char*)buf, MAX_WCHAR_SIZE, 0);
 			if (len > 0) {
-				c_info->pTCP_SOCKET->RecvData(buf, len, *c_info);
+				// 클라이언트
+				c_info->pTCP_SOCKET->RecvData_Client(buf, len, *c_info);
 			}
 			else if (len < 0) {
 				// lose connection
@@ -274,24 +276,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 				WSACleanup();
 				return false;
 			}
-			printf("Accept!\n");
-
-			//client_info* c_info = new client_info;
-			//memcpy(&c_info->cSock, &client_sock, sizeof(SOCKET));
-			//int addrLen = sizeof(c_info->clientAddr);
-			//getpeername(c_info->cSock, (sockaddr*)&c_info->clientAddr, &addrLen);
-			//char* clientIP = inet_ntoa(c_info->clientAddr.sin_addr);
-			//WCHAR WCHAR_clientIP[30] = { 0, };
-			//MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, clientIP, strlen(clientIP), WCHAR_clientIP, 256);
-			//int clientPort = ntohs(c_info->clientAddr.sin_port);
-			//CString portNum = _T("");
-			//portNum.Format(_T("%d"), clientPort);
-			//CString key = CString(WCHAR_clientIP) + _T(":") + portNum;
-			//memcpy(&c_info->ipPort[0], key.GetBuffer(), key.GetLength()*2);
-			//c_info->checkRecv = true;
-			//this->client_map.insert(std::make_pair(key, *c_info));		
-			//c_info->pTCP_SOCKET = this;
-			
+			//printf("Accept!\n");
 			this->clientInfo = new CLIENT_INFO;
 			memcpy(&this->clientInfo->cSock, &client_sock, sizeof(SOCKET));
 			int addrLen = sizeof(this->clientInfo->clientAddr);
@@ -331,26 +316,6 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 			return false;
 
 		Sleep(DELAY_TIME);
-
-		//client_info* c_info = new client_info;
-		//c_info->cSock = this->listener;
-		//int addrLen = sizeof(c_info->clientAddr);
-		//getpeername(c_info->cSock, (sockaddr*)&c_info->clientAddr, &addrLen);
-		//char* clientIP = inet_ntoa(c_info->clientAddr.sin_addr);
-		//WCHAR WCHAR_clientIP[30] = { 0, };
-		//MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, clientIP, strlen(clientIP), WCHAR_clientIP, 256);
-		//int clientPort = ntohs(c_info->clientAddr.sin_port);
-		//CString portNum = _T("");
-		//portNum.Format(_T("%d"), clientPort);
-		//CString key = CString(WCHAR_clientIP) + _T(":") + portNum;
-		//memcpy(&c_info->ipPort[0], key.GetBuffer(), key.GetLength()*2);
-		//c_info->checkSend = true;
-		//this->mapKey = key;
-		//c_info->pTCP_SOCKET = this;
-		//this->client_map.insert(std::make_pair(key, *c_info));
-
-		//c_info->pTCP_SOCKET = 0;
-		//delete c_info;
 
 		this->clientInfo = new CLIENT_INFO;
 		memcpy(&this->clientInfo->cSock, &this->listener, sizeof(SOCKET));
@@ -543,6 +508,7 @@ void CTCP_SOCKET::GetServerErrorMsg(CString& str, CLIENT_INFO& c_info)
 	free(errorMsg);
 }
 
+/*
 bool CTCP_SOCKET::RecvData(WCHAR* data, int& len, CLIENT_INFO& c_info)
 {
 	WCHAR firstByte = data[0];
@@ -643,6 +609,7 @@ bool CTCP_SOCKET::RecvData(WCHAR* data, int& len, CLIENT_INFO& c_info)
 
 	return true;
 }
+*/
 
 bool CTCP_SOCKET::SendData(WCHAR type, WCHAR* data, int len)
 {

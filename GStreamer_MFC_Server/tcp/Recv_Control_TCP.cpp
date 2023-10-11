@@ -2,12 +2,6 @@
 
 #include "../byteControl.h"
 
-CRECV_CONTROL::CRECV_CONTROL()
-{
-	this->FC_RV_FUNC_LIST[FC_RV_LOGIN_REQUEST] = &CRECV_CONTROL::Recv_LoginRequest;
-	this->FC_RV_FUNC_LIST[FC_RV_ID_EXIST] = &CRECV_CONTROL::Recv_IDExist;
-}
-
 bool CRECV_CONTROL::Recv_DeleteLoginSessionAll()
 {
 	CString str = _T("TRUNCATE TABLE TB_LOGIN");

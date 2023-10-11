@@ -3,10 +3,7 @@
 
 #include <iostream>
 
-//#include "PODBC.h";
-//#include "POLEDB.h"
-//#include "DBStructure.h"
-#include "tcp/tcpSocket.h"
+#include "../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
 
 int main()
 {

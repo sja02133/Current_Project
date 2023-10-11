@@ -45,13 +45,19 @@
     <ClInclude Include="..\GStreamer_MFC_Server\POLEDB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\GStreamer_MFC_Server\byteControl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CChattingRoom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\GStreamer_MFC_Server\errorCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcp\Client_TCP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcp\tcpSocket_Client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="byteControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,13 +77,16 @@
     <ClCompile Include="..\GStreamer_MFC_Server\POLEDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GStreamer_MFC_Server\tcp\tcpSocket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\GStreamer_MFC_Server\byteControl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CChattingRoom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tcp\Client_TCP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tcp\tcpSocket_Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="byteControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

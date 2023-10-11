@@ -1,5 +1,18 @@
 #pragma once
 
+/*
+
+TCP 공통 모듈 부분만 선언할 것!
+
+범위 : (FUNC) Initialize() 함수에서 Client 와 Server 구분..
+		Client : Connect 된 이후 Thread_Recv 함수를 구동한 다음 해당 모듈 종료
+		Server : Accept Waiting 이후 Accept 시 Thread_Recv 함수를 구동한 다음 Accept Waiting..
+other 코드에서 사용법 : Thread_Recv 함수 내부에서 필요한 함수 구현할 것..
+*/
+
+
+
+
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <string>
@@ -14,6 +27,8 @@
 #include "../errorCode.h"
 
 #include <atlstr.h>
+
+#include "../Server_TCP.h"
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -50,23 +65,73 @@ typedef struct client_info {
 	WCHAR ID[100] = { 0, };
 }CLIENT_INFO;
 
+typedef struct socket_info {
+	// 서버와 클라이언트를 구분하자.
+	bool checkServer = 0;	// 0 : 클라이언트, 1 : 서버
+
+	// 공통
+	SOCKET cSock;
+	WCHAR ipPort[30] = { 0, };
+	int errorCode = 0;
+	WCHAR sendData[MAX_WCHAR_SIZE] = { 0, };
+	unsigned int sendDataLength;
+
+	CTCP_SOCKET* pTCP_SOCKET;
+
+	time_t loginTime;	// 추후 최초 접속 시점 기록
+
+	// 클라이언트
+	HANDLE clientToRecvThread;
+
+	// 서버
+	HANDLE clientToSendThread;
+	WCHAR ID[100] = { 0, };
+
+
+	bool checkResponse = true;
+	sockaddr_in clientAddr;
+	int status = 0;
+	WCHAR last_type = 0;
+	int last_type_success = -1;	// -1 : 성공유무 알 수 없음, 0 : 실패, 1 : 성공
+	
+	bool checkRecv = false;
+	
+	bool checkSend = false;
+	
+	//bool checkExit = false;
+	
+}SOCKET_INFO;
+
 class CMAP_CONTROL_CUSTOM {
 public:
 	CString MakeKey(CString ip, CString port);
 };
 
-class CSERVER_CONTROL {
+class CRECV_CONTROL {
 public:
-	typedef struct columndata {
-		byte db_type;
-		int len = 0;
-		WCHAR* data = 0;
-	}COLUMN_DATA;
-public:
+	CRECV_CONTROL();
+	// 2023.09.25 수정사항. 마지막에 true를 반환 할 때 총 문자열의 길이를 len에 할당해야한다.
 
-public:
-	bool Send_Response(CLIENT_INFO* c_info, bool success);
-	bool Send_Message(CLIENT_INFO* c_info);
+	// 서버 자체
+	bool Recv_DeleteLoginSessionAll();
+
+	// C -> S, 서버 수신
+	bool Recv_LoginRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_IDExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_MembershipJoin(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_LoginOutRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
+
+	// C -> S, 서버 수신
+	bool Recv_LoginSessionList(WCHAR* data, int& len, CLIENT_INFO& c_info);
 };
 
 class CCLIENT_CONTROL {
@@ -77,32 +142,6 @@ public:
 	bool MakeErrorCode(int code, CLIENT_INFO& c_info);
 	bool MakeErrorExistMsg(int code, CLIENT_INFO& c_info);
 	bool Set_ErrorMsg(CLIENT_INFO& c_info, int code);
-};
-
-// FUNC NUM 리스트 (추가 될 시 이 곳에 추가)
-enum RECV_FUNC_NO {
-	FC_RV_LOGIN_REQUEST,
-	FC_RV_ID_EXIST,
-
-	MAX_FC_RV_NO	// <- 이곳 아래에 FUNC NUM 정의 금지
-};
-
-class CRECV_CONTROL {
-public:
-	CRECV_CONTROL();
-	// 2023.09.25 수정사항. 마지막에 true를 반환 할 때 총 문자열의 길이를 len에 할당해야한다.
-	bool Recv_DeleteLoginSessionAll();
-	bool Recv_LoginRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
-	bool Recv_LoginResponse(WCHAR* data, int& len, CLIENT_INFO& c_info);
-	bool Recv_IDExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
-	bool Recv_MembershipJoin(WCHAR* data, int& len, CLIENT_INFO& c_info);
-	bool Recv_LoginOutRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
-	bool Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
-	bool Recv_LoginSessionList(WCHAR* data, int& len, CLIENT_INFO& c_info);
-
-public:
-	typedef bool(CRECV_CONTROL::* BOOL)(WCHAR*, int&, CLIENT_INFO&);
-	BOOL FC_RV_FUNC_LIST[MAX_FC_RV_NO];
 };
 
 class CSEND_CONTROL {
@@ -122,8 +161,9 @@ public:
 
 class CTCP_SOCKET : public CMAP_CONTROL_CUSTOM,
 	public CSEND_CONTROL,
-	public CRECV_CONTROL,
-	public CSERVER_CONTROL{
+	public CRECV_CONTROL
+	//public CSERVER_CONTROL
+{
 public:
 	CTCP_SOCKET()
 	{

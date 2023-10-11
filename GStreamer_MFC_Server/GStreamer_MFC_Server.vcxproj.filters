@@ -74,5 +74,8 @@
     <ClInclude Include="errorCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Server_TCP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
