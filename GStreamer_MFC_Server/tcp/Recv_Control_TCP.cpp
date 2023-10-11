@@ -1,8 +1,12 @@
-#include "tcpSocket.h"
+#include "../../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
 
-#include "../byteControl.h"
+#include "../Server_TCP.h"
 
-bool CRECV_CONTROL::Recv_DeleteLoginSessionAll()
+#include "../../Common/GStreamer_MFC/byteControl/byteControl.h"
+
+// 서버측 커스텀
+
+bool CRECV_CONTROL_SERVER::Recv_DeleteLoginSessionAll()
 {
 	CString str = _T("TRUNCATE TABLE TB_LOGIN");
 
@@ -13,7 +17,7 @@ bool CRECV_CONTROL::Recv_DeleteLoginSessionAll()
 		return false;
 }
 
-bool CRECV_CONTROL::Recv_LoginResponse(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CRECV_CONTROL_SERVER::Recv_LoginResponse(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	int pos = 0;
 	pos++;	// pass to first byte
@@ -25,7 +29,7 @@ bool CRECV_CONTROL::Recv_LoginResponse(WCHAR* data, int& len, CLIENT_INFO& c_inf
 		return false;
 }
 
-bool CRECV_CONTROL::Recv_IDExist(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CRECV_CONTROL_SERVER::Recv_IDExist(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	c_info.checkResponse = true;
 
@@ -87,7 +91,7 @@ bool CRECV_CONTROL::Recv_IDExist(WCHAR* data, int& len, CLIENT_INFO& c_info)
 	return true;
 }
 
-bool CRECV_CONTROL::Recv_LoginRequest(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CRECV_CONTROL_SERVER::Recv_LoginRequest(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	//CString id, password;
 
@@ -201,7 +205,7 @@ bool CRECV_CONTROL::Recv_LoginRequest(WCHAR* data, int& len, CLIENT_INFO& c_info
 	//printf("%s 로그인 세션 생성\n", c_info.ID);
 
 	if (rowCount > 0 && checkInsert) {
-		// 로그인 성공 시엔 CLIENT_INFO& c_info 내의 ID에 이 함수 내의 id를 작성할 것.
+		// 로그인 성공 시엔 SOCKET_INFO& c_info 내의 ID에 이 함수 내의 id를 작성할 것.
 		printf("%s 로그인!\n", c_info.ID);
 		return true;
 	}
@@ -217,7 +221,7 @@ bool CRECV_CONTROL::Recv_LoginRequest(WCHAR* data, int& len, CLIENT_INFO& c_info
 	}
 }
 
-bool CRECV_CONTROL::Recv_MembershipJoin(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CRECV_CONTROL_SERVER::Recv_MembershipJoin(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	CString id, password;
 
@@ -293,7 +297,7 @@ bool CRECV_CONTROL::Recv_MembershipJoin(WCHAR* data, int& len, CLIENT_INFO& c_in
 		return false;
 }
 
-bool CRECV_CONTROL::Recv_LoginOutRequest(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CRECV_CONTROL_SERVER::Recv_LoginOutRequest(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	CString id;
 
@@ -345,7 +349,7 @@ bool CRECV_CONTROL::Recv_LoginOutRequest(WCHAR* data, int& len, CLIENT_INFO& c_i
 		return false;
 }
 
-bool CRECV_CONTROL::Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CRECV_CONTROL_SERVER::Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	CString id;
 
@@ -400,7 +404,7 @@ bool CRECV_CONTROL::Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, CLIENT_
 	return true;
 }
 
-bool CRECV_CONTROL::Recv_LoginSessionList(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CRECV_CONTROL_SERVER::Recv_LoginSessionList(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	CString str = _T("SELECT TB_LOGIN.USER_ID FROM TB_LOGIN");
 	COLEDB_HANDLER& db_connection_ = COLEDB_HANDLER::GetInstance();

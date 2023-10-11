@@ -18,21 +18,6 @@
     <ClCompile Include="GStreamer_MFC_Server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="login.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PODBC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="POLEDB.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tcp\tcpSocket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="byteControl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tcp\Server_TCP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,36 +30,18 @@
     <ClCompile Include="tcp\Send_Control_TCP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="login.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PODBC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="POLEDB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dbDefine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DBStructure.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="byteControl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tcp\tcpSocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tcp\tcp_ManageMent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="errorCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Server_TCP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

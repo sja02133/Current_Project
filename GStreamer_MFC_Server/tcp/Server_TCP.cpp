@@ -1,8 +1,12 @@
-#include "tcpSocket.h"
 
-#include "../byteControl.h"
 
-bool CSERVER_CONTROL::Send_Message(CLIENT_INFO* c_info)
+
+
+#include "../../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
+
+#include "../../Common/GStreamer_MFC/byteControl/byteControl.h"
+
+bool CSERVER_CONTROL::Send_Message(SOCKET_INFO* c_info)
 {
 	int check = send(c_info->cSock, (char*)c_info->sendData, c_info->sendDataLength * 2, 0);
 	if (check > 0)
@@ -11,7 +15,7 @@ bool CSERVER_CONTROL::Send_Message(CLIENT_INFO* c_info)
 		return false;
 }
 
-bool CSERVER_CONTROL::Send_Response(CLIENT_INFO* c_info, bool success)
+bool CSERVER_CONTROL::Send_Response(SOCKET_INFO* c_info, bool success)
 {
 	WCHAR type = 'R';
 
@@ -32,7 +36,7 @@ bool CSERVER_CONTROL::Send_Response(CLIENT_INFO* c_info, bool success)
 		return false;
 }
 
-bool CSERVER_CONTROL::RecvData_Server(WCHAR* data, int& len, CLIENT_INFO& c_info)
+bool CSERVER_CONTROL::RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	WCHAR firstByte = data[0];
 

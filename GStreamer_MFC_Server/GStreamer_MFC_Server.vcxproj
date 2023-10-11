@@ -140,28 +140,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="byteControl.cpp" />
+    <ClCompile Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.cpp" />
     <ClCompile Include="GStreamer_MFC_Server.cpp" />
-    <ClCompile Include="login.cpp" />
-    <ClCompile Include="PODBC.cpp" />
-    <ClCompile Include="POLEDB.cpp" />
     <ClCompile Include="tcp\Client_TCP.cpp" />
     <ClCompile Include="tcp\Recv_Control_TCP.cpp" />
     <ClCompile Include="tcp\Send_Control_TCP.cpp" />
     <ClCompile Include="tcp\Server_TCP.cpp" />
-    <ClCompile Include="tcp\tcpSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="byteControl.h" />
-    <ClInclude Include="dbDefine.h" />
-    <ClInclude Include="DBStructure.h" />
-    <ClInclude Include="errorCode.h" />
+    <ClInclude Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.h" />
     <ClInclude Include="login.h" />
-    <ClInclude Include="PODBC.h" />
-    <ClInclude Include="POLEDB.h" />
     <ClInclude Include="Server_TCP.h" />
-    <ClInclude Include="tcp\tcpSocket.h" />
-    <ClInclude Include="tcp\tcp_ManageMent.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

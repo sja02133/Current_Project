@@ -1,6 +1,6 @@
 #include "tcpSocket.h"
 #include <sstream>
-#include "../byteControl.h"
+#include "../byteControl/byteControl.h"
 
 #define MAXBUF 1024
 
@@ -8,14 +8,26 @@
 
 void WINAPI Thread_Recv(void* arg);
 
+// do not modify this function!
+template<typename ... Args>
+CString string_format(const CString& format, Args ... args)
+{
+	size_t size = snprintf(nullptr, 0, format.GetString(), args ...) + 1; // Extra space for '\0'
+	if (size <= 0) { throw std::runtime_error("Error during formatting."); }
+	std::unique_ptr<char[]> buf(new char[size]);
+	snprintf(buf.get(), size, format.GetString(), args ...);
+	return CString(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+}
+//
+
 CTCP_SOCKET::~CTCP_SOCKET()
 {
 	// 종료 혹은 파괴 시
 
 	// 1. std::map<CString, client_info> client_map; 의 client_map에 대한 정보들을 삭제한다.
-	auto iter = this->client_map.begin();
+	auto iter = this->socket_map.begin();
 	int check = 0;
-	for (; iter != this->client_map.end(); iter++) {
+	for (; iter != this->socket_map.end(); iter++) {
 		// malloc된 데이터 지우기.
 		if (iter->second.sendDataLength > 0)
 			this->SetInitialize_CLIENT_INFO(iter);
@@ -30,70 +42,15 @@ CTCP_SOCKET::~CTCP_SOCKET()
 	}
 
 	if (check > 0)
-		this->client_map.clear();
+		this->socket_map.clear();
 	//
 }
 
-template<typename ... Args>
-CString string_format(const CString& format, Args ... args)
-{
-	size_t size = snprintf(nullptr, 0, format.GetString(), args ...) + 1; // Extra space for '\0'
-	if (size <= 0) { throw std::runtime_error("Error during formatting."); }
-	std::unique_ptr<char[]> buf(new char[size]);
-	snprintf(buf.get(), size, format.GetString(), args ...);
-	return CString(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
-}
-
-/*
-void WINAPI recv_data(void *arg)
-{
-	printf("수신 시작\n");
-	CLIENT_INFO* c_info = (CLIENT_INFO*)arg;
-	WCHAR ipPort[20] = { 0, };
-	memcpy(&ipPort[0], c_info->ipPort, 20*2);
-	CString key = ipPort;
-
-	//auto iter = c_info->pTCP_SOCKET->client_map.find(key);
-	auto iter = c_info->pTCP_SOCKET->GetIteratorTarget(c_info->pTCP_SOCKET, key);
-
-	if (iter == c_info->pTCP_SOCKET->client_map.end())
-		return;
-
-	delete arg;
-
-	int n = 0;
-	WCHAR buf[MAXBUF] = { 0 };
-	while (true) {
-		Sleep(DELAY_TIME);
-		wmemset(buf, 0, MAXBUF);
-		n = recv(iter->second.cSock, (char*)buf, MAXBUF, 0);
-		if (n > 0) {
-			if (c_info->pTCP_SOCKET->RecvData(buf, n, iter->second)) {
-				if (iter->second.checkResponse == false) {
-					c_info->pTCP_SOCKET->Send_Message(&iter->second);
-					iter->second.checkResponse = true;
-				}
-				else
-					c_info->pTCP_SOCKET->Send_Response(&iter->second, true);
-			}
-			else {
-				if (iter->second.errorCode == 0)
-					c_info->pTCP_SOCKET->Send_Response(&iter->second, false);
-				else {
-					//c_info->pTCP_SOCKET->Send_Fail(iter->second,iter->second.errorCode);
-				}
-			}
-		}
-		else if (n == -1)
-			break;
-	}
-}
-*/
 void WINAPI Thread_Accept(void* arg)
 {
 
 	fd_set reads, temps;
-	CLIENT_INFO* c_info = (CLIENT_INFO*)arg;
+	SOCKET_INFO* socket_info = (SOCKET_INFO*)arg;
 
 	//c_info->pTCP_SOCKET->listener;
 
@@ -103,14 +60,14 @@ void WINAPI Thread_Accept(void* arg)
 		//Sleep(1000);
 
 		FD_ZERO(&reads);
-		FD_SET(c_info->pTCP_SOCKET->listener, &reads);
+		FD_SET(socket_info->pTCP_SOCKET->listener, &reads);
 
 		temps = reads;
 
 		timeout.tv_sec = 0;
 		timeout.tv_usec = 100000;
 
-		int s = select(c_info->pTCP_SOCKET->listener + 1, &temps, 0, 0, &timeout);
+		int s = select(socket_info->pTCP_SOCKET->listener + 1, &temps, 0, 0, &timeout);
 
 		if (s < 0)
 			break;
@@ -118,19 +75,19 @@ void WINAPI Thread_Accept(void* arg)
 			continue;
 
 		for (int i = 0; i < reads.fd_count; i++) {
-			if (reads.fd_array[i] == c_info->pTCP_SOCKET->listener) {
+			if (reads.fd_array[i] == socket_info->pTCP_SOCKET->listener) {
 				// 연결 요청
-				SOCKET hCltSock = accept(c_info->pTCP_SOCKET->listener, nullptr, nullptr);
+				SOCKET hCltSock = accept(socket_info->pTCP_SOCKET->listener, nullptr, nullptr);
 				if (hCltSock == INVALID_SOCKET) {
-					closesocket(c_info->pTCP_SOCKET->listener);
+					closesocket(socket_info->pTCP_SOCKET->listener);
 					WSACleanup();
 					return;
 				}
 				else {
 					// accept 성공!
-					c_info->cSock = hCltSock;
-					HANDLE hHandle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))Thread_Recv, (void*)c_info, 0, 0);
-					c_info->pTCP_SOCKET->client_HANDLE_map.insert(std::make_pair(c_info->ipPort, hHandle));
+					socket_info->cSock = hCltSock;
+					HANDLE hHandle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))Thread_Recv, (void*)socket_info, 0, 0);
+					socket_info->pTCP_SOCKET->client_HANDLE_map.insert(std::make_pair(socket_info->ipPort, hHandle));
 				}
 			}
 		}
@@ -140,7 +97,7 @@ void WINAPI Thread_Accept(void* arg)
 void WINAPI Thread_Recv(void* arg)
 {
 	fd_set reads, temps;
-	CLIENT_INFO* c_info = (CLIENT_INFO*)arg;
+	SOCKET_INFO* socket_info = (SOCKET_INFO*)arg;
 
 	//c_info->pTCP_SOCKET->listener;
 
@@ -150,32 +107,29 @@ void WINAPI Thread_Recv(void* arg)
 		//Sleep(1000);
 
 		FD_ZERO(&reads);
-		FD_SET(c_info->cSock, &reads);
+		FD_SET(socket_info->cSock, &reads);
 
 		temps = reads;
 
 		timeout.tv_sec = 0;
 		timeout.tv_usec = 100000;
 
-		int s = select(c_info->cSock + 1, &temps, 0, 0, &timeout);
+		int s = select(socket_info->cSock + 1, &temps, 0, 0, &timeout);
 
 		if (s < 0)
 			break;
 		else if (s == 0)
 			continue;
 
-		if (FD_ISSET(c_info->cSock, &reads)) {
+		if (FD_ISSET(socket_info->cSock, &reads)) {
 			// read
 			WCHAR buf[MAX_WCHAR_SIZE] = { 0, };
-			int len = recv(c_info->cSock, (char*)buf, MAX_WCHAR_SIZE, 0);
-			if (len > 0 && c_info->pTCP_SOCKET->server_HANDLE != NULL) {
-				// 서버
-				c_info->pTCP_SOCKET->RecvData_Server(buf, len, *c_info);
+			int len = recv(socket_info->cSock, (char*)buf, MAX_WCHAR_SIZE, 0);
+			if (len > 0) {
+				// 이곳에 데이터 수신 부 처리하는 커스텀 처리를 할것!
+				socket_info->pTCP_SOCKET->RecvData_Server(buf, len, *socket_info);
+				//
 			}
-			//else if (len > 0 && c_info->pTCP_SOCKET->server_HANDLE == NULL) {
-			//	// 클라이언트
-			//	c_info->pTCP_SOCKET->RecvData_Client(buf, len, *c_info);
-			//}
 			else if (len < 0) {
 				// lose connection
 				return;
@@ -190,64 +144,64 @@ void WINAPI Thread_Recv(void* arg)
 
 bool test = false;
 
-void WINAPI send_data(void* arg)
-{
-	CLIENT_INFO* c_info = (CLIENT_INFO*)arg;
-
-	WCHAR ipPort[30] = { 0, };
-	
-	memcpy(&ipPort[0], c_info->ipPort, 30*2);
-
-	CString key = ipPort;
-
-	int n = 0;
-	WCHAR buf[MAXBUF] = { 0 };
-
-	auto iter_c_info = c_info->pTCP_SOCKET->GetIteratorTarget(c_info->pTCP_SOCKET, key);
-	if (iter_c_info == c_info->pTCP_SOCKET->client_map.end())
-		return;
-
-	delete arg;
-
-	while (true) {
-		Sleep(DELAY_TIME);
-		if (iter_c_info->second.status != 0) {
-			// Exist send data..
-			if (iter_c_info->second.sendData[0] == 'C')
-				int kkk = 0;
-
-			n = send(iter_c_info->second.cSock, (char*)iter_c_info->second.sendData, iter_c_info->second.sendDataLength*2, 0);
-
-			if(iter_c_info->second.sendDataLength > 0)
-				wmemset(iter_c_info->second.sendData,0,MAX_WCHAR_SIZE);
-			wmemset(buf, 0, MAXBUF);
-			n = recv(iter_c_info->second.cSock, (char*)buf, MAXBUF, 0);
-			if (n > 0) {
-				// 수신된 데이터가 있다...
-				c_info->pTCP_SOCKET->RecvData(buf, n, iter_c_info->second);
-				iter_c_info->second.status = 0;
-				wmemset(iter_c_info->second.sendData, 0, MAX_WCHAR_SIZE);
-				wmemcpy(iter_c_info->second.sendData, buf, n);
-				iter_c_info->second.sendDataLength = (n / 2); // -> n(수신된 byte)에서 나누기 2를 하는 이유는 send 보낼때 곱하기 2를 해서 보내기 때문에.CString이라..
-				iter_c_info->second.last_type = buf[0];
-				if (iter_c_info->second.last_type == 'R') {
-					WCHAR checkResponseResult = 0;
-					wmemcpy(&checkResponseResult, &buf[1], 1);
-					if (checkResponseResult == 0x01)
-						iter_c_info->second.last_type_success = 1;
-					else
-						iter_c_info->second.last_type_success = 0;
-				}
-				else if (iter_c_info->second.last_type == 'E') {
-					iter_c_info->second.last_type_success = 0;
-				}
-			}
-			iter_c_info->second.status = 0;
-		}
-		else if (n == -1)
-			break;
-	}
-}
+//void WINAPI send_data(void* arg)
+//{
+//	CLIENT_INFO* c_info = (CLIENT_INFO*)arg;
+//
+//	WCHAR ipPort[30] = { 0, };
+//	
+//	memcpy(&ipPort[0], c_info->ipPort, 30*2);
+//
+//	CString key = ipPort;
+//
+//	int n = 0;
+//	WCHAR buf[MAXBUF] = { 0 };
+//
+//	auto iter_c_info = c_info->pTCP_SOCKET->GetIteratorTarget(c_info->pTCP_SOCKET, key);
+//	if (iter_c_info == c_info->pTCP_SOCKET->client_map.end())
+//		return;
+//
+//	delete arg;
+//
+//	while (true) {
+//		Sleep(DELAY_TIME);
+//		if (iter_c_info->second.status != 0) {
+//			// Exist send data..
+//			if (iter_c_info->second.sendData[0] == 'C')
+//				int kkk = 0;
+//
+//			n = send(iter_c_info->second.cSock, (char*)iter_c_info->second.sendData, iter_c_info->second.sendDataLength*2, 0);
+//
+//			if(iter_c_info->second.sendDataLength > 0)
+//				wmemset(iter_c_info->second.sendData,0,MAX_WCHAR_SIZE);
+//			wmemset(buf, 0, MAXBUF);
+//			n = recv(iter_c_info->second.cSock, (char*)buf, MAXBUF, 0);
+//			if (n > 0) {
+//				// 수신된 데이터가 있다...
+//				c_info->pTCP_SOCKET->RecvData(buf, n, iter_c_info->second);
+//				iter_c_info->second.status = 0;
+//				wmemset(iter_c_info->second.sendData, 0, MAX_WCHAR_SIZE);
+//				wmemcpy(iter_c_info->second.sendData, buf, n);
+//				iter_c_info->second.sendDataLength = (n / 2); // -> n(수신된 byte)에서 나누기 2를 하는 이유는 send 보낼때 곱하기 2를 해서 보내기 때문에.CString이라..
+//				iter_c_info->second.last_type = buf[0];
+//				if (iter_c_info->second.last_type == 'R') {
+//					WCHAR checkResponseResult = 0;
+//					wmemcpy(&checkResponseResult, &buf[1], 1);
+//					if (checkResponseResult == 0x01)
+//						iter_c_info->second.last_type_success = 1;
+//					else
+//						iter_c_info->second.last_type_success = 0;
+//				}
+//				else if (iter_c_info->second.last_type == 'E') {
+//					iter_c_info->second.last_type_success = 0;
+//				}
+//			}
+//			iter_c_info->second.status = 0;
+//		}
+//		else if (n == -1)
+//			break;
+//	}
+//}
 
 bool CTCP_SOCKET::Initialize(bool checkRecv)
 {
@@ -276,7 +230,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 				return false;
 			}
 			//printf("Accept!\n");
-			this->clientInfo = new CLIENT_INFO;
+			this->clientInfo = new SOCKET_INFO;
 			memcpy(&this->clientInfo->cSock, &client_sock, sizeof(SOCKET));
 			int addrLen = sizeof(this->clientInfo->clientAddr);
 			getpeername(this->clientInfo->cSock, (sockaddr*)&this->clientInfo->clientAddr, &addrLen);
@@ -316,7 +270,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 
 		Sleep(DELAY_TIME);
 
-		this->clientInfo = new CLIENT_INFO;
+		this->clientInfo = new SOCKET_INFO;
 		memcpy(&this->clientInfo->cSock, &this->listener, sizeof(SOCKET));
 		int addrLen = sizeof(this->clientInfo->clientAddr);
 		getpeername(this->clientInfo->cSock, (sockaddr*)&this->clientInfo->clientAddr, &addrLen);
@@ -343,6 +297,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 	}
 	return true;
 }
+
 
 bool CTCP_SOCKET::WSAStartUp_CHECK()
 {
@@ -456,13 +411,13 @@ bool CTCP_SOCKET::Listen_CHECK()
 		return false;
 }
 
-std::map<CString, client_info>::iterator CTCP_SOCKET::GetIteratorTarget(CTCP_SOCKET* pTCP_SOCKET,CString mapKey)
+std::map<CString, SOCKET_INFO>::iterator CTCP_SOCKET::GetIteratorTarget(CTCP_SOCKET* pTCP_SOCKET,CString mapKey)
 {
-	std::map<CString, client_info>::iterator iter = pTCP_SOCKET->client_map.find(mapKey);
+	std::map<CString, SOCKET_INFO>::iterator iter = pTCP_SOCKET->socket_map.find(mapKey);
 	return iter;
 }
 
-void CTCP_SOCKET::SetInitialize_CLIENT_INFO(std::map<CString, client_info>::iterator iter)
+void CTCP_SOCKET::SetInitialize_CLIENT_INFO(std::map<CString, SOCKET_INFO>::iterator iter)
 {
 	iter->second.last_type = 0;
 	iter->second.last_type_success = -1;
@@ -472,17 +427,17 @@ void CTCP_SOCKET::SetInitialize_CLIENT_INFO(std::map<CString, client_info>::iter
 	}
 }
 
-void CTCP_SOCKET::SetInitialize_CLIENT_INFO(CLIENT_INFO* c_info)
+void CTCP_SOCKET::SetInitialize_CLIENT_INFO(SOCKET_INFO* socket_info)
 {
-	c_info->last_type = 0;
-	c_info->last_type_success = -1;
-	if (c_info->sendDataLength > 0) {
-		wmemset(c_info->sendData, 0, 1024);
-		c_info->sendDataLength = 0;
+	socket_info->last_type = 0;
+	socket_info->last_type_success = -1;
+	if (socket_info->sendDataLength > 0) {
+		wmemset(socket_info->sendData, 0, 1024);
+		socket_info->sendDataLength = 0;
 	}
 }
 
-void CTCP_SOCKET::GetServerErrorMsg(CString& str, CLIENT_INFO& c_info)
+void CTCP_SOCKET::GetServerErrorMsg(CString& str, SOCKET_INFO& c_info)
 {
 	int pos = 0;
 
@@ -612,28 +567,21 @@ bool CTCP_SOCKET::RecvData(WCHAR* data, int& len, CLIENT_INFO& c_info)
 
 bool CTCP_SOCKET::SendData(WCHAR type, WCHAR* data, int len)
 {
-	//std::map<CString, client_info>::iterator iter_c_info;
-	//if (!pTCP_SOCKET->mapKey.IsEmpty()) {
-	//	iter_c_info = pTCP_SOCKET->client_map.find(pTCP_SOCKET->mapKey);
-	//	if (iter_c_info != pTCP_SOCKET->client_map.end())
-	//		pTCP_SOCKET->SetInitialize_CLIENT_INFO(pTCP_SOCKET->client_map.find(pTCP_SOCKET->mapKey));
-	//}
+	// 이곳에서 보낼 데이터를 만든다..
 
 	this->SetInitialize_CLIENT_INFO(this->clientInfo);
 
 	if (this->mapKey.IsEmpty())
 		return false;
 
-	//if (MakeSendData(type, data, len, pTCP_SOCKET,iter_c_info->second.cSock)) {
+	//if (MakeSendData(type, data, len, this, this->clientInfo->cSock)) {
 	//	return true;
 	//}
 	//else
 	//	return false;
 
-	if (MakeSendData(type, data, len, this, this->clientInfo->cSock)) {
-		return true;
-	}
-	else
-		return false;
+	//
+
+	return true;
 }
 

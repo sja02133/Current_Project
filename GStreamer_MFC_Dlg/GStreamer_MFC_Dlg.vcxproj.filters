@@ -42,9 +42,6 @@
     <ClInclude Include="CMembershipDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\GStreamer_MFC_Server\POLEDB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CChattingRoom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +57,9 @@
     <ClInclude Include="byteControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="POLEDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GStreamer_MFC_Dlg.cpp">
@@ -72,9 +72,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CMembershipDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\GStreamer_MFC_Server\POLEDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CChattingRoom.cpp">
