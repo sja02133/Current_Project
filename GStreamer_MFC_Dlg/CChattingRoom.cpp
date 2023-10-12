@@ -17,6 +17,7 @@ CChattingRoom::CChattingRoom(CWnd* pParent /*=nullptr*/)
 {
 	AfxInitRichEdit();
 	Set_ConnectSessionIdList();
+	clnt_con = new CCLIENT_CONTROL;
 }
 
 CChattingRoom::~CChattingRoom()
@@ -44,7 +45,7 @@ void CChattingRoom::OnClose()
 	if (MessageBox(_T("로그아웃 하시겠습니까?"), _T("로그아웃"), MB_YESNO) == IDYES) {
 		WCHAR type = 'O';
 
-		auto iter_c_info = theApp.socket.client_map.find(theApp.socket.mapKey);
+		auto iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 
 		CString data = _T("");
 		CString id = _T("id ");
@@ -52,8 +53,8 @@ void CChattingRoom::OnClose()
 		int length = id.GetLength() + _tcslen(iter_c_info->second.ID);
 
 		data += id + idData;
-
-		if (theApp.socket.SendData(type, data.GetBuffer(), data.GetLength(), &theApp.socket)) {
+		
+		if (clnt_con->SendData(type, data.GetBuffer(), data.GetLength(), iter_c_info->second)) {
 			// 추후에 이곳에 기존에 있던 채팅 내용들 같은 경우를 작성해야함.
 
 			::SendMessage(this->m_hWnd, WM_DESTROY, NULL, NULL);
@@ -66,12 +67,12 @@ void CChattingRoom::Set_ConnectSessionIdList()
 {
 	WCHAR type = 'C';
 
-	auto iter_c_info = theApp.socket.client_map.find(theApp.socket.mapKey);
+	auto iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 
-	if (theApp.socket.SendData(type, NULL, 0, &theApp.socket)) {
+	if (clnt_con->SendData(type, NULL, 0, iter_c_info->second)) {
 		// 추후에 이곳에 기존에 있던 채팅 내용들 같은 경우를 작성해야함.
 		while (true) {
-			auto iter_c_info = theApp.socket.client_map.find(theApp.socket.mapKey);
+			auto iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 
 			if (iter_c_info->second.last_type == 'S') {
 				// 성공

@@ -1,10 +1,19 @@
 
-
-
-
 #include "../../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
 
 #include "../../Common/GStreamer_MFC/byteControl/byteControl.h"
+
+#include "../../GStreamer_MFC_Server/Server_TCP.h"
+
+CSERVER_CONTROL::CSERVER_CONTROL()
+{
+	//
+}
+
+CSERVER_CONTROL::~CSERVER_CONTROL()
+{
+	// 소멸자 호출 순서는 CSERVER_CONTROL -> CTCP_CONTROL
+}
 
 bool CSERVER_CONTROL::Send_Message(SOCKET_INFO* c_info)
 {

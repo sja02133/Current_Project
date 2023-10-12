@@ -4,7 +4,9 @@
 
 #pragma once
 //#include "tcpSocket.h"
-#include "../GStreamer_MFC_Server/tcp/tcpSocket.h"
+#include "../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
+
+#include "tcp/Client_TCP.h"
 
 // CGStreamerMFCDlgDlg dialog
 class CGStreamerMFCDlgDlg : public CDialog
@@ -38,4 +40,5 @@ public:
 	CString m_loginPassword;
 	afx_msg void OnBnClickedButtonLogin();
 	afx_msg void OnBnClickedButtonJoinMembership();
+	CCLIENT_CONTROL* clnt_con;
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "tcp/Client_TCP.h"
 
 
 // CChattingRoom dialog
@@ -28,4 +29,6 @@ protected:
 public:
 	afx_msg void OnClose();
 	CListBox m_loginSessionList;
+
+	CCLIENT_CONTROL* clnt_con;
 };

@@ -58,6 +58,7 @@ CGStreamerMFCDlgDlg::CGStreamerMFCDlgDlg(CWnd* pParent /*=nullptr*/)
 	, m_loginPassword(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	clnt_con = new CCLIENT_CONTROL;
 }
 
 void CGStreamerMFCDlgDlg::DoDataExchange(CDataExchange* pDX)
@@ -215,8 +216,8 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 	WCHAR type = 'L';
 
 	//char&& a = 10;
-
-	if (theApp.socket.SendData(type, data.GetBuffer(), data.GetLength(), &theApp.socket)) {
+	auto iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
+	if (clnt_con->SendData(type,data.GetBuffer(),data.GetLength(), iter_c_info->second)) {
 		int count = 0;
 
 		while (true) {

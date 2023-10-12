@@ -7,6 +7,8 @@
 #include "GStreamer_MFC_Dlg.h"
 #include "GStreamer_MFC_DlgDlg.h"
 
+#include "../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
+#include "../Common/GStreamer_MFC/byteControl/byteControl.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -108,7 +110,7 @@ BOOL CGStreamerMFCDlgApp::InitInstance()
 	return FALSE;
 }
 
-void CGStreamerMFCDlgApp::MessageBox_ErrorCode(HWND hwnd, int code, CLIENT_INFO& c_info,int messageBoxType)
+void CGStreamerMFCDlgApp::MessageBox_ErrorCode(HWND hwnd, int code, SOCKET_INFO& c_info,int messageBoxType)
 {
 	//c_info.pTCP_SOCKET->GetServerErrorMsg(errorMsg,c_info);
 

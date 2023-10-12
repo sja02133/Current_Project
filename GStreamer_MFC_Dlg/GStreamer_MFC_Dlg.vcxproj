@@ -158,7 +158,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -183,24 +183,24 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\GStreamer_MFC_Server\errorCode.h" />
-    <ClInclude Include="byteControl.h" />
+    <ClInclude Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.h" />
     <ClInclude Include="CChattingRoom.h" />
     <ClInclude Include="CMembershipDlg.h" />
-    <ClInclude Include="dbDefine.h" />
-    <ClInclude Include="DBStructure.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GStreamer_MFC_Dlg.h" />
     <ClInclude Include="GStreamer_MFC_DlgDlg.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="POLEDB.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tcp\Client_TCP.h" />
-    <ClInclude Include="tcp\tcpSocket_Client.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="byteControl.cpp" />
+    <ClCompile Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderOutputFile>
+    </ClCompile>
     <ClCompile Include="CChattingRoom.cpp" />
     <ClCompile Include="CMembershipDlg.cpp" />
     <ClCompile Include="GStreamer_MFC_Dlg.cpp" />
@@ -211,8 +211,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="tcp\Client_TCP.cpp" />
-    <ClCompile Include="tcp\tcpSocket_Client.cpp" />
+    <ClCompile Include="tcp\Client_TCP.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderOutputFile>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GStreamerMFCDlg.rc" />

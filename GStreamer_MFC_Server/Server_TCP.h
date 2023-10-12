@@ -18,7 +18,7 @@
 
 class CRECV_CONTROL_SERVER {
 public:
-	CRECV_CONTROL_SERVER();
+	//CRECV_CONTROL_SERVER();
 	// 2023.09.25 수정사항. 마지막에 true를 반환 할 때 총 문자열의 길이를 len에 할당해야한다.
 	bool Recv_DeleteLoginSessionAll();
 	bool Recv_LoginRequest(WCHAR* data, int& len, SOCKET_INFO& c_info);
@@ -30,9 +30,22 @@ public:
 	bool Recv_LoginSessionList(WCHAR* data, int& len, SOCKET_INFO& c_info);
 };
 
-class CSERVER_CONTROL
-	: public CTCP_SOCKET
-	, public CRECV_CONTROL_SERVER {
+class CSEND_CONTROL_SERVER {
+public:
+	bool MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock);
+	bool SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
+public:
+	WCHAR* MakeSetTypeChar(WCHAR type, WCHAR* data, int& len);
+	WCHAR* MakeRequestLoginData(WCHAR type, WCHAR* data, int& len);
+	WCHAR* MakeRequestIDExist(WCHAR type, WCHAR* data, int& len);
+	WCHAR* MakeRequestMembershipJoin(WCHAR type, WCHAR* data, int& len);
+	WCHAR* MakeRequestLogOut(WCHAR type, WCHAR* data, int& len);
+	WCHAR* MakeRequestLoginSession(WCHAR type, WCHAR* data, int& len);
+};
+
+class CSERVER_CONTROL : public CTCP_SOCKET
+	, public CRECV_CONTROL_SERVER
+	, public CSEND_CONTROL_SERVER {
 public:
 	typedef struct columndata {
 		byte db_type;
@@ -40,7 +53,8 @@ public:
 		WCHAR* data = 0;
 	}COLUMN_DATA;
 public:
-
+	CSERVER_CONTROL();
+	~CSERVER_CONTROL();
 public:
 	bool RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info);
 	bool Send_Response(SOCKET_INFO* c_info, bool success);

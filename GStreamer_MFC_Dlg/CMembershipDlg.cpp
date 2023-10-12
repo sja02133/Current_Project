@@ -17,7 +17,8 @@ CMembershipDlg::CMembershipDlg(CWnd* pParent /*=nullptr*/)
 	, m_MembershipPassword(_T(""))
 	, m_static(_T(""))
 {
-	this->iter_c_info = theApp.socket.client_map.find(theApp.socket.mapKey);
+	this->iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
+	clnt_con = new CCLIENT_CONTROL;
 }
 
 CMembershipDlg::~CMembershipDlg()
@@ -258,9 +259,10 @@ void CMembershipDlg::OnEnChangeEditMembershipId()
 
 		char type = 'I';
 
-		if (theApp.socket.SendData(type, data.GetBuffer(), data.GetLength(), &theApp.socket)) {
+		
+		if (clnt_con->SendData(type, data.GetBuffer(), data.GetLength(), iter_c_info->second)) {
 			while (true) {
-				auto iter_c_info = theApp.socket.client_map.find(theApp.socket.mapKey);
+				auto iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 
 				if (iter_c_info->second.last_type == 'R' && iter_c_info->second.last_type_success == 1) {
 					// 중복 아이디 없음..
@@ -338,11 +340,13 @@ bool CMembershipDlg::SendMembershipJoin()
 
 	char type = 'M';
 
-	if (theApp.socket.SendData(type, data.GetBuffer(), data.GetLength(), &theApp.socket)) {
+
+	
+	if (clnt_con->SendData(type, data.GetBuffer(), data.GetLength(), iter_c_info->second)) {
 		int count = 0;
 
 		while (true) {
-			auto iter_c_info = theApp.socket.client_map.find(theApp.socket.mapKey);
+			auto iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 
 			if (iter_c_info->second.last_type == 'R' && iter_c_info->second.last_type_success == 1) {
 				// 성공

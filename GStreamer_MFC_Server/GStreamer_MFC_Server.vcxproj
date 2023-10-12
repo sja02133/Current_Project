@@ -140,14 +140,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\GStreamer_MFC\byteControl\byteControl.cpp" />
+    <ClCompile Include="..\Common\GStreamer_MFC\OLEDB\POLEDB.cpp" />
     <ClCompile Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.cpp" />
     <ClCompile Include="GStreamer_MFC_Server.cpp" />
-    <ClCompile Include="tcp\Client_TCP.cpp" />
     <ClCompile Include="tcp\Recv_Control_TCP.cpp" />
     <ClCompile Include="tcp\Send_Control_TCP.cpp" />
     <ClCompile Include="tcp\Server_TCP.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\GStreamer_MFC\OLEDB\dbDefine.h" />
+    <ClInclude Include="..\Common\GStreamer_MFC\OLEDB\DBStructure.h" />
     <ClInclude Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.h" />
     <ClInclude Include="login.h" />
     <ClInclude Include="Server_TCP.h" />

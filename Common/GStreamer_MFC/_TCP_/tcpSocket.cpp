@@ -1,10 +1,11 @@
 #include "tcpSocket.h"
 #include <sstream>
-#include "../byteControl/byteControl.h"
 
 #define MAXBUF 1024
 
 //CTCP_SOCKET tempClass;
+
+#include "../../../GStreamer_MFC_Server/Server_TCP.h"
 
 void WINAPI Thread_Recv(void* arg);
 
@@ -127,7 +128,16 @@ void WINAPI Thread_Recv(void* arg)
 			int len = recv(socket_info->cSock, (char*)buf, MAX_WCHAR_SIZE, 0);
 			if (len > 0) {
 				// 이곳에 데이터 수신 부 처리하는 커스텀 처리를 할것!
-				socket_info->pTCP_SOCKET->RecvData_Server(buf, len, *socket_info);
+				//socket_info->pTCP_SOCKET->RecvData_Server(buf, len, *socket_info);
+				if (socket_info->checkServer == 1) {
+					// 서버
+					CSERVER_CONTROL serv_con;
+					serv_con.RecvData_Server(buf, len, *socket_info);
+				}
+				else {
+					// 클라이언트
+
+				}
 				//
 			}
 			else if (len < 0) {
@@ -245,7 +255,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 			this->clientInfo->checkRecv = true;
 			//this->client_map.insert(std::make_pair(key, *c_info));	
 			this->clientInfo->pTCP_SOCKET = this;
-			
+			this->clientInfo->checkServer = 1;
 			HANDLE hHandle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))Thread_Recv, (void*)this->clientInfo, 0, 0);
 			this->server_HANDLE = hHandle;
 		}
@@ -286,7 +296,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 		this->mapKey = key;
 		//this->client_map.insert(std::make_pair(key, *c_info));	
 		this->clientInfo->pTCP_SOCKET = this;
-
+		this->clientInfo->checkServer = 0;
 		//HANDLE hHandle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))send_data, (void*)c_info, 0, 0);
 		HANDLE hHandle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))Thread_Recv, (void*)this->clientInfo, 0, 0);
 
@@ -462,108 +472,6 @@ void CTCP_SOCKET::GetServerErrorMsg(CString& str, SOCKET_INFO& c_info)
 	free(errorMsg);
 }
 
-/*
-bool CTCP_SOCKET::RecvData(WCHAR* data, int& len, CLIENT_INFO& c_info)
-{
-	WCHAR firstByte = data[0];
-
-	bool checkResult = false;
-
-	if (c_info.pTCP_SOCKET->checkFirstStart == true && c_info.pTCP_SOCKET->client_HANDLE == NULL) {
-		// 서버 최초 실행
-		Recv_DeleteLoginSessionAll();
-		c_info.pTCP_SOCKET->checkFirstStart = false;
-	}
-
-	switch (firstByte) {
-	case 'L':
-	{
-		// login 요청
-		if (Recv_LoginRequest(data, len, c_info))
-			checkResult = true;
-		else
-			checkResult = false;
-		break;
-	}
-	case 'I':
-	{
-		// ID 중복 검사
-		if (Recv_IDExist(data, len, c_info))
-			checkResult = true;
-		else
-			checkResult = false;
-		break;
-	}
-	case 'M':
-		// 회원가입 요청
-		if (Recv_MembershipJoin(data, len, c_info)) {
-			//memset(c_info.ID, 0, strlen(c_info.ID));
-			wmemset(c_info.ID, 0, _tcsclen(c_info.ID));
-			return true;
-		}
-		else
-			return false;
-		break;
-	case 'O':
-		// 로그아웃 세션 제거
-		if (Recv_LoginOutRequest(data, len, c_info)) {
-			printf("%s 로그아웃 성공\n", c_info.ID);
-			wmemset(c_info.ID, 0, _tcsclen(c_info.ID));
-			return true;
-		}
-		else
-			return false;
-		break;
-	case 'A':
-		// 로그인 세션 중복 검사
-		if (Recv_AlreadyLoginSessionExist(data, len, c_info)) {
-			return true;
-		}
-		else {
-			//Send_Fail(c_info, 100);	//코드는 현재 임시...
-			return false;
-		}
-		break;
-	case 'C':
-		// 현재 로그인 중인 세션 리스트 송신
-		if (Recv_LoginSessionList(data, len, c_info)) {
-			return true;
-		}
-		else
-			return false;
-		break;
-	case 'S':
-		// 현재 로그인 중인 세션 리스트 수신
-		return true;
-		break;
-	default:
-		return true;
-		break;
-	}
-
-	if (c_info.checkResponse == true && checkResult == true) {
-		// response(true)
-		Send_Response(&c_info, true);
-	}
-	else if (c_info.checkResponse == true && checkResult == false) {
-		// response(false)
-		if (c_info.errorCode == 0)
-			Send_Response(&c_info, false);
-		else
-			Send_Message(&c_info);
-	}
-	else if (c_info.checkResponse == false && checkResult == false) {
-		// message(error code)
-		Send_Message(&c_info);
-	}
-	else {
-		// 코드 수정 필요..
-		Send_Response(&c_info, false);
-	}
-
-	return true;
-}
-*/
 
 bool CTCP_SOCKET::SendData(WCHAR type, WCHAR* data, int len)
 {
@@ -584,4 +492,3 @@ bool CTCP_SOCKET::SendData(WCHAR type, WCHAR* data, int len)
 
 	return true;
 }
-

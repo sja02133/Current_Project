@@ -1,6 +1,8 @@
-#include "tcpSocket.h"
+#include "../../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
 
-bool CSEND_CONTROL::MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock)
+#include "../Server_TCP.h"
+
+bool CSEND_CONTROL_SERVER::MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock)
 {
 	WCHAR* sendRealData = 0;
 	switch (proto_type) {
@@ -45,7 +47,7 @@ bool CSEND_CONTROL::MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SO
 	return false;
 }
 
-WCHAR* CSEND_CONTROL::MakeSetTypeChar(WCHAR type, WCHAR* data, int& len)
+WCHAR* CSEND_CONTROL_SERVER::MakeSetTypeChar(WCHAR type, WCHAR* data, int& len)
 {
 	// 현재 이곳에서 메모리 침범 에러가 생기는것 같다. 
 
@@ -86,35 +88,35 @@ WCHAR* CSEND_CONTROL::MakeSetTypeChar(WCHAR type, WCHAR* data, int& len)
 	return totalStr;
 }
 
-WCHAR* CSEND_CONTROL::MakeRequestIDExist(WCHAR type, WCHAR* data, int& len)
+WCHAR* CSEND_CONTROL_SERVER::MakeRequestIDExist(WCHAR type, WCHAR* data, int& len)
 {
 	return MakeSetTypeChar(type, data, len);
 }
 
-WCHAR* CSEND_CONTROL::MakeRequestLoginData(WCHAR type, WCHAR* data, int& len)
+WCHAR* CSEND_CONTROL_SERVER::MakeRequestLoginData(WCHAR type, WCHAR* data, int& len)
 {
 	return MakeSetTypeChar(type, data, len);
 }
 
-WCHAR* CSEND_CONTROL::MakeRequestMembershipJoin(WCHAR type, WCHAR* data, int& len)
+WCHAR* CSEND_CONTROL_SERVER::MakeRequestMembershipJoin(WCHAR type, WCHAR* data, int& len)
 {
 	return MakeSetTypeChar(type, data, len);
 }
 
-WCHAR* CSEND_CONTROL::MakeRequestLoginSession(WCHAR type, WCHAR* data, int& len)
+WCHAR* CSEND_CONTROL_SERVER::MakeRequestLoginSession(WCHAR type, WCHAR* data, int& len)
 {
 	return MakeSetTypeChar(type, data, len);
 }
 
-WCHAR* CSEND_CONTROL::MakeRequestLogOut(WCHAR type, WCHAR* data, int& len)
+WCHAR* CSEND_CONTROL_SERVER::MakeRequestLogOut(WCHAR type, WCHAR* data, int& len)
 {
 	return MakeSetTypeChar(type, data, len);
 }
 
-bool CSEND_CONTROL::SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET)
+bool CSEND_CONTROL_SERVER::SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET)
 {
-	std::map<CString, client_info>::iterator iter_c_info = pTCP_SOCKET->client_map.find(pTCP_SOCKET->mapKey);
-	if (iter_c_info == pTCP_SOCKET->client_map.end())
+	std::map<CString, SOCKET_INFO>::iterator iter_c_info = pTCP_SOCKET->socket_map.find(pTCP_SOCKET->mapKey);
+	if (iter_c_info == pTCP_SOCKET->socket_map.end())
 		return false;
 
 	auto& pCINFO = iter_c_info->second;

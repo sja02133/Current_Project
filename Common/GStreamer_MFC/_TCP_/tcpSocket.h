@@ -10,9 +10,6 @@ TCP 공통 모듈 부분만 선언할 것!
 other 코드에서 사용법 : Thread_Recv 함수 내부에서 필요한 함수 구현할 것..
 */
 
-
-
-
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <string>
@@ -26,10 +23,8 @@ other 코드에서 사용법 : Thread_Recv 함수 내부에서 필요한 함수 구현할 것..
 #include "../OLEDB/POLEDB.h"
 
 #include "../ERROR_CODE/errorCode.h"
-
+#include "../byteControl/byteControl.h"
 #include <atlstr.h>
-
-#include "../../../GStreamer_MFC_Server/Server_TCP.h"
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -44,27 +39,6 @@ constexpr auto SERVER_IP = "192.168.2.239";
 #define DELAY_TIME	10	// 안정화를 위한 딜레이 시간.
 
 #define MAX_WCHAR_SIZE 9000
-
-//typedef struct client_info {
-//	bool checkResponse = true;
-//	sockaddr_in clientAddr;
-//	int status = 0;
-//	WCHAR last_type = 0;
-//	int last_type_success = -1;	// -1 : 성공유무 알 수 없음, 0 : 실패, 1 : 성공
-//	SOCKET cSock;
-//	WCHAR ipPort[30] = { 0, };
-//	bool checkRecv = false;
-//	HANDLE clientToRecvThread;
-//	bool checkSend = false;
-//	HANDLE clientToSendThread;
-//	int errorCode = 0;
-//	WCHAR sendData[MAX_WCHAR_SIZE] = { 0, };
-//	unsigned int sendDataLength;
-//	time_t loginTime;
-//	CTCP_SOCKET* pTCP_SOCKET;
-//	bool checkExit = false;
-//	WCHAR ID[100] = { 0, };
-//}CLIENT_INFO;
 
 typedef struct socket_info {
 	// 서버와 클라이언트를 구분하자.
@@ -100,38 +74,6 @@ typedef struct socket_info {
 	
 }SOCKET_INFO;
 
-class CMAP_CONTROL_CUSTOM {
-public:
-	CString MakeKey(CString ip, CString port);
-};
-
-//class CRECV_CONTROL {
-//public:
-//	CRECV_CONTROL();
-//	// 2023.09.25 수정사항. 마지막에 true를 반환 할 때 총 문자열의 길이를 len에 할당해야한다.
-//
-//	// 서버 자체
-//	bool Recv_DeleteLoginSessionAll();
-//
-//	// C -> S, 서버 수신
-//	bool Recv_LoginRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
-//
-//	// C -> S, 서버 수신
-//	bool Recv_IDExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
-//
-//	// C -> S, 서버 수신
-//	bool Recv_MembershipJoin(WCHAR* data, int& len, CLIENT_INFO& c_info);
-//
-//	// C -> S, 서버 수신
-//	bool Recv_LoginOutRequest(WCHAR* data, int& len, CLIENT_INFO& c_info);
-//
-//	// C -> S, 서버 수신
-//	bool Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, CLIENT_INFO& c_info);
-//
-//	// C -> S, 서버 수신
-//	bool Recv_LoginSessionList(WCHAR* data, int& len, CLIENT_INFO& c_info);
-//};
-
 class CCLIENT_CONTROL {
 public:
 	bool Recv_Response(WCHAR* data, int& len, SOCKET_INFO& c_info);
@@ -142,34 +84,20 @@ public:
 	bool Set_ErrorMsg(SOCKET_INFO& c_info, int code);
 };
 
-class CSEND_CONTROL {
-public:
-	bool MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET,SOCKET cSock);
-	bool SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
-public:
-	WCHAR* MakeSetTypeChar(WCHAR type, WCHAR* data, int& len);
-	WCHAR* MakeRequestLoginData(WCHAR type, WCHAR* data, int& len);
-	WCHAR* MakeRequestIDExist(WCHAR type, WCHAR* data, int& len);
-	WCHAR* MakeRequestMembershipJoin(WCHAR type, WCHAR* data, int& len);
-	WCHAR* MakeRequestLogOut(WCHAR type, WCHAR* data, int& len);
-	WCHAR* MakeRequestLoginSession(WCHAR type, WCHAR* data, int& len);
-};
-
-
-
-class CTCP_SOCKET : public CMAP_CONTROL_CUSTOM
-	//public CSERVER_CONTROL
+class CTCP_SOCKET
 {
 public:
 	CTCP_SOCKET()
 	{
 
 	}
+public:
 	CTCP_SOCKET(bool checkRecv)
 	{
 		Initialize(checkRecv);
 	}
-	~CTCP_SOCKET();
+public:
+	virtual ~CTCP_SOCKET();
 	bool Initialize(bool checkRecv);	// Recv => 1, Send => 0
 	bool WSAStartUp_CHECK();
 	bool CreateSocket_CHECK();
@@ -200,6 +128,7 @@ public:
 	SOCKET_INFO* clientInfo;
 
 	// 코드 수정...
-	bool RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info);
+	//virtual bool RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info);
 	bool SendData(WCHAR type, WCHAR* data, int len);
+	//void WINAPI Thread_Recv(void* arg);
 };

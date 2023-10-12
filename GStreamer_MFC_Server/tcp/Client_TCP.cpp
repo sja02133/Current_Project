@@ -1,4 +1,4 @@
-#include "tcpSocket.h"
+#include "../../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
 
 bool CCLIENT_CONTROL::Recv_Response(WCHAR* data, int& len, CLIENT_INFO& c_info)
 {

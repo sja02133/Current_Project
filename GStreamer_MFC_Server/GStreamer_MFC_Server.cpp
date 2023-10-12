@@ -5,8 +5,15 @@
 
 #include "../Common/GStreamer_MFC/_TCP_/tcpSocket.h"
 
+#include "Server_TCP.h"
+
 int main()
 {
+
+    //CSERVER_CONTROL serv_sock;
+
+    
+    
    CTCP_SOCKET sock;
    if (!sock.Initialize(1)) {
        sock.~CTCP_SOCKET();

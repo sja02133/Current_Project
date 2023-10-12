@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tcp/Client_TCP.h"
 
 // CMembershipDlg dialog
 
@@ -24,7 +25,7 @@ public:
 	CString m_MembershipID;
 	CString m_MembershipPassword;
 public:
-	std::map<CString, CLIENT_INFO>::iterator iter_c_info;
+	std::map<CString, SOCKET_INFO>::iterator iter_c_info;
 	bool Check_IdExist();
 	int Check_IdString();
 	bool Send_JoinMembership();
@@ -37,6 +38,8 @@ public:
 	bool checkFirst = true;
 	bool checkIdSuccess = false;
 	afx_msg void OnBnClickedButtonMembershipJoin();
+
+	CCLIENT_CONTROL* clnt_con;
 };
 
 
