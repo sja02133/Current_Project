@@ -62,7 +62,6 @@ typedef struct socket_info {
 	HANDLE clientToSendThread;
 	WCHAR ID[100] = { 0, };
 
-
 	bool checkResponse = true;
 	sockaddr_in clientAddr;
 	int status = 0;

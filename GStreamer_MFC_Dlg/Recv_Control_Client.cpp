@@ -12,3 +12,9 @@ bool CRECV_CONTROL_CLIENT::Recv_Response(WCHAR* data, int& len, SOCKET_INFO& soc
 	else
 		return false;
 }
+
+// 서버에서 전송받은 로그인 세션에 대한 정보들을 어떻게 클라이언트측에서 처리하여 list control에서 보이게 할것 인지?
+bool CRECV_CONTROL_CLIENT::Recv_LoginSessionListInfo(WCHAR* data, int& len, SOCKET_INFO& socket_info)
+{
+	return true;
+}

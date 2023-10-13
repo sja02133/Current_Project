@@ -77,6 +77,9 @@
     <ClCompile Include="Recv_Control_Client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Send_Control_Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GStreamerMFCDlg.rc">

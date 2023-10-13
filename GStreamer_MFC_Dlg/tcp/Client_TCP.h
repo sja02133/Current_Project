@@ -19,6 +19,8 @@
 class CRECV_CONTROL_CLIENT {
 public:
 	bool Recv_Response(WCHAR* data, int& len, SOCKET_INFO& socket_info);
+	bool Recv_LoginSessionListInfo(WCHAR* data, int& len, SOCKET_INFO& socket_info);
+	
 	//CRECV_CONTROL_CLIENT();
 	// 2023.09.25 수정사항. 마지막에 true를 반환 할 때 총 문자열의 길이를 len에 할당해야한다.
 	//bool Recv_DeleteLoginSessionAll();
@@ -32,11 +34,11 @@ public:
 };
 
 class CSEND_CONTROL_CLIENT {
-//public:
-//	bool MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock);
+public:
+	bool MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock);
 //	bool SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
-//public:
-//	WCHAR* MakeSetTypeChar(WCHAR type, WCHAR* data, int& len);
+public:
+	WCHAR* MakeSetTypeChar(WCHAR type, WCHAR* data, int& len);
 //	WCHAR* MakeRequestLoginData(WCHAR type, WCHAR* data, int& len);
 //	WCHAR* MakeRequestIDExist(WCHAR type, WCHAR* data, int& len);
 //	WCHAR* MakeRequestMembershipJoin(WCHAR type, WCHAR* data, int& len);

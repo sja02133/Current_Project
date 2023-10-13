@@ -450,6 +450,7 @@ void CTCP_SOCKET::SetInitialize_CLIENT_INFO(std::map<CString, SOCKET_INFO>::iter
 	}
 }
 
+// SOCKET_INFO 구조체의 정보를 초기화 시킨다.
 void CTCP_SOCKET::SetInitialize_CLIENT_INFO(SOCKET_INFO* socket_info)
 {
 	socket_info->last_type = 0;
