@@ -74,15 +74,6 @@ typedef struct socket_info {
 	
 }SOCKET_INFO;
 
-class CCLIENT_CONTROL {
-public:
-	bool Recv_Response(WCHAR* data, int& len, SOCKET_INFO& c_info);
-public:
-	bool Send_Fail(SOCKET_INFO& c_info, int code);
-	bool MakeErrorCode(int code, SOCKET_INFO& c_info);
-	bool MakeErrorExistMsg(int code, SOCKET_INFO& c_info);
-	bool Set_ErrorMsg(SOCKET_INFO& c_info, int code);
-};
 
 class CTCP_SOCKET
 {
@@ -128,7 +119,5 @@ public:
 	SOCKET_INFO* clientInfo;
 
 	// 코드 수정...
-	//virtual bool RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info);
 	bool SendData(WCHAR type, WCHAR* data, int len);
-	//void WINAPI Thread_Recv(void* arg);
 };

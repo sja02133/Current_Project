@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 
 이곳은 커스텀 클라이언트 코드가 저장됨
@@ -16,6 +18,7 @@
 
 class CRECV_CONTROL_CLIENT {
 public:
+	bool Recv_Response(WCHAR* data, int& len, SOCKET_INFO& socket_info);
 	//CRECV_CONTROL_CLIENT();
 	// 2023.09.25 수정사항. 마지막에 true를 반환 할 때 총 문자열의 길이를 len에 할당해야한다.
 	//bool Recv_DeleteLoginSessionAll();
@@ -40,7 +43,17 @@ class CSEND_CONTROL_CLIENT {
 //	WCHAR* MakeRequestLogOut(WCHAR type, WCHAR* data, int& len);
 //	WCHAR* MakeRequestLoginSession(WCHAR type, WCHAR* data, int& len);
 };
-
+/*
+class CCLIENT_CONTROL {
+public:
+	bool Recv_Response(WCHAR* data, int& len, SOCKET_INFO& c_info);
+public:
+	bool Send_Fail(SOCKET_INFO& c_info, int code);
+	bool MakeErrorCode(int code, SOCKET_INFO& c_info);
+	bool MakeErrorExistMsg(int code, SOCKET_INFO& c_info);
+	bool Set_ErrorMsg(SOCKET_INFO& c_info, int code);
+};
+*/
 class CCLIENT_CONTROL : public CTCP_SOCKET
 	, public CRECV_CONTROL_CLIENT
 	, public CSEND_CONTROL_CLIENT {
@@ -54,8 +67,8 @@ public:
 	CCLIENT_CONTROL();
 	~CCLIENT_CONTROL();
 public:
-	bool RecvData_CLIENT(WCHAR* data, int& len, SOCKET_INFO& c_info);
-	bool Send_Response(SOCKET_INFO* c_info, bool success);
-	bool Send_Message(SOCKET_INFO* c_info);
-	bool SendData(WCHAR type, WCHAR* data, int len,SOCKET_INFO& s_info);
+	bool RecvData_Client(WCHAR* data, int& len, SOCKET_INFO& socket_info);
+	//bool Send_Response(SOCKET_INFO* c_info, bool success);
+	//bool Send_Message(SOCKET_INFO* c_info);
+	bool SendData(WCHAR type, WCHAR* data, int len,SOCKET_INFO& socket_info);
 };

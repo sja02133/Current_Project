@@ -45,6 +45,9 @@
     <ClInclude Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\GStreamer_MFC\byteControl\byteControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GStreamer_MFC_Dlg.cpp">
@@ -66,6 +69,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\GStreamer_MFC\byteControl\byteControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Recv_Control_Client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

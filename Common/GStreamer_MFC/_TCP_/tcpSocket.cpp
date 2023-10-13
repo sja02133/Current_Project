@@ -6,6 +6,7 @@
 //CTCP_SOCKET tempClass;
 
 #include "../../../GStreamer_MFC_Server/Server_TCP.h"
+#include "../../../GStreamer_MFC_Dlg/tcp/Client_TCP.h"
 
 void WINAPI Thread_Recv(void* arg);
 
@@ -129,16 +130,28 @@ void WINAPI Thread_Recv(void* arg)
 			if (len > 0) {
 				// 이곳에 데이터 수신 부 처리하는 커스텀 처리를 할것!
 				//socket_info->pTCP_SOCKET->RecvData_Server(buf, len, *socket_info);
+				/*
 				if (socket_info->checkServer == 1) {
 					// 서버
+#ifndef SOCKET_CLIENT
 					CSERVER_CONTROL serv_con;
 					serv_con.RecvData_Server(buf, len, *socket_info);
+#endif
 				}
 				else {
 					// 클라이언트
-
+					CCLIENT_CONTROL clnt_con;
+					clnt_con.RecvData_Client(buf, len, *socket_info);
 				}
-				//
+				*/
+
+#ifdef SOCKET_CLIENT
+				CCLIENT_CONTROL clnt_con;
+				clnt_con.RecvData_Client(buf, len, *socket_info);
+#else
+				CSERVER_CONTROL serv_con;
+				serv_con.RecvData_Server(buf, len, *socket_info);
+#endif
 			}
 			else if (len < 0) {
 				// lose connection
