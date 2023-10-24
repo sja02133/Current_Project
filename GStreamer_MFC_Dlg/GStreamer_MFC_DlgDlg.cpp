@@ -221,12 +221,12 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 		int count = 0;
 
 		while (true) {
-			//auto iter_c_info = theApp.socket.client_map.find(theApp.socket.mapKey);
+			iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 
 			//if (iter_c_info->second.last_type == 'R' && iter_c_info->second.last_type_success == 1) {
 			//	// 성공
 			//	memcpy(iter_c_info->second.ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength() * 2);
-
+			
 			//	CChattingRoom dlg;
 			//	dlg.DoModal();
 			//	break;
@@ -242,6 +242,38 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 			//	break;
 			//}
 
+			if (iter_c_info->second.last_type == 'R' && iter_c_info->second.last_type_success == 1) {
+				// 성공
+				memcpy(iter_c_info->second.ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength()*2);
+				//memcpy(theApp.socket.clientInfo->ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength() * 2);
+
+				CChattingRoom dlg;
+				dlg.DoModal();
+				break;
+			}
+			else if (iter_c_info->second.last_type == 'R' && iter_c_info->second.last_type_success == 0) {
+				// 실패..
+				MessageBox(L"로그인 실패");
+				break;
+			}
+			else if (iter_c_info->second.last_type == 'E' && iter_c_info->second.last_type_success == 0) {
+				// 실패..
+				theApp.MessageBox_ErrorCode(this->GetSafeHwnd(), theApp.socket.clientInfo->errorCode,
+					iter_c_info->second, 0);
+				break;
+			}
+			else {
+				count++;
+				if (count == 10) {
+					// 2023.09.01 왜인진 모르겠지만 MessageBox를 실행하면 에러가 생긴다. 이유는?
+					// 
+					//MessageBox(L"응답 시간 초과");
+					break;
+				}
+				Sleep(1000);
+			}
+
+			/*
 			if (theApp.socket.clientInfo->last_type == 'R' && theApp.socket.clientInfo->last_type_success == 1) {
 				// 성공
 				memcpy(theApp.socket.clientInfo->ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength()*2);
@@ -271,6 +303,7 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 				}
 				Sleep(1000);
 			}
+			*/
 		}
 	}
 }

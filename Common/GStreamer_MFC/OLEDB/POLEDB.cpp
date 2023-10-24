@@ -296,7 +296,11 @@ std::list<QUERY_RESULT> COLEDB_HANDLER::SelectTBUser(CString query)
 	return queryResult;
 }
 
-std::list<QUERY_RESULT> COLEDB_HANDLER::SelectTBLogin(CString query)
+// 인자 추가
+
+//std::list<QUERY_RESULT> COLEDB_HANDLER::SelectTBLogin(CString query)
+int COLEDB_HANDLER::SelectTBLogin(CString query,std::list<QUERY_RESULT>& columnName
+	,std::list<QUERY_RESULT>& columnValue)
 {
 	// 2023.09.08 문제, SELECT * FROM TB_LOGIN 같은 쿼리는 정상적으로 동작하나, SELECT USER_ID FROM TB_LOGIN 같은 쿼리는 문제가 발생된다. 이유가 멀까.
 
@@ -314,49 +318,88 @@ std::list<QUERY_RESULT> COLEDB_HANDLER::SelectTBLogin(CString query)
 	std::list<QUERY_RESULT> queryResult;
 
 	if (FAILED(hr)) {
-		result.type = -1;
-		queryResult.push_back(result);
-		return queryResult;
+		//result.type = -1;
+		//queryResult.push_back(result);
+		return 0;
+		//return queryResult;
 	}
 
 	bool checkFirst = true;	// first is true => Column Name
 
 	CString data = _T("");
-
+	QUERY_RESULT q_result;
 	RESULT_DATA result_data;
 	while ((hr = cmd.MoveNext()) == S_OK) {
-		if (checkFirst) {
+		result.type = 0;
+		result.result.clear();
+		if (checkFirst)
+		{
 			// Column Name
 			checkFirst = false;
 			result.type = 0;
 			for (int i = 0; i < cmd.GetColumnCount(); i++) {
-				LPOLESTR a = cmd.GetColumnName(i+1);
+				LPOLESTR a = cmd.GetColumnName(i + 1);
 				CStringA sss(a);
 				data = sss;
 				cmd.GetColumnType(i, &result_data.dbType);
+				q_result.type = 0;
 				result_data.resultString = data;
-				result.result.push_back(result_data);
+				q_result.result.push_back(result_data);
+				//result.result.push_back(result_data);
 				result_data.dbType = 0;
 				result_data.resultString = _T("");
+				columnName.push_back(q_result);
 			}
 		}
-		else {
+
+		{
 			result.type = 1;
-			printf("햔재 접속 중 : ");
 
 			for (int i = 0; i < cmd.GetColumnCount(); i++) {
-				data = (WCHAR*)cmd.GetValue(i + 1);
-				printf("%ls",data);
-				result_data.dbType = -1;
+				q_result.result.clear();
+				DBTYPE type;
+				cmd.GetColumnType(i + 1, &type);
+				CStringW sssW;
+				CStringA sssA;
+				switch (type) {
+				case DBTYPE_WSTR:
+					sssW = ((LPCWSTR)(LPWSTR)cmd.GetValue(i + 1));
+					data = sssW;
+					break;
+				case DBTYPE_STR:
+					//sss.SetString((WCHAR*)cmd.GetValue(i + 1));
+					sssA = ((LPCSTR)(LPSTR)cmd.GetValue(i + 1));
+					data = sssA;
+					break;
+				default:
+					CString sss((char*)cmd.GetValue(i + 1));
+					break;
+				}
+				q_result.type = -1;
 				result_data.resultString = data;
-				result.result.push_back(result_data);
+				q_result.result.push_back(result_data);
+				columnValue.push_back(q_result);
 				result_data.resultString = _T("");
 			}
-			printf("\n");
+			//columnValue.push_back(result);
 		}
-		queryResult.push_back(result);
-		result.type = 0;
-		result.result.clear();
 	}
-	return queryResult;
+	return 1;
+}
+
+int COLEDB_HANDLER::Commit()
+{
+	return 1;
+
+	CCommand<CNoAccessor, CNoRowset> cmd;
+
+	//HRESULT hr = CoInitialize(0);
+
+	HRESULT hr = db_connection->GetSession().Commit();
+
+	//hr = cmd.Open(db_connection->GetSession(), _T("COMMIT"));
+	cmd.Close();
+	if (FAILED(hr))
+		return 0;
+	return 1;
 }

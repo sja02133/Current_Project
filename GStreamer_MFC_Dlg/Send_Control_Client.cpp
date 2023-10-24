@@ -4,8 +4,6 @@
 
 bool CSEND_CONTROL_CLIENT::MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock)
 {
-
-
 	WCHAR* sendRealData = 0;
 	switch (proto_type) {
 	case _T('L'):
@@ -47,13 +45,13 @@ bool CSEND_CONTROL_CLIENT::MakeSendData(WCHAR proto_type, WCHAR* data, int len, 
 		int k = send(cSock, (char*)sendRealData, len * 2, 0);
 		if (k < 0)
 			return false;
-		//else
-		//	return true;
+		else
+			return true;
 
-		WCHAR* buffer[1000] = { 0, };
+		//WCHAR* buffer[1000] = { 0, };
 
-		k = recv(cSock, (char*)buffer, MAX_WCHAR_SIZE, 0);
-		int kkk = 0;
+		//k = recv(cSock, (char*)buffer, MAX_WCHAR_SIZE, 0);
+		
 	}
 	return false;
 }
@@ -68,6 +66,7 @@ WCHAR* CSEND_CONTROL_CLIENT::MakeSetTypeChar(WCHAR type, WCHAR* data, int& len)
 		// type만 오는 경우
 		totalStr = (WCHAR*)malloc(2);
 		memcpy(totalStr, &type, 2);
+		len = 2;
 		return totalStr;
 	}
 

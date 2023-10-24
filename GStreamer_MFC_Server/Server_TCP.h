@@ -30,10 +30,15 @@ public:
 	bool Recv_LoginSessionList(WCHAR* data, int& len, SOCKET_INFO& c_info);
 };
 
+
 class CSEND_CONTROL_SERVER {
 public:
 	bool MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock);
 	bool SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
+	bool Set_ErrorMsg(SOCKET_INFO& c_info, int code);
+	bool Send_Fail(SOCKET_INFO& c_info, int code);
+	bool MakeErrorExistMsg(int code, SOCKET_INFO& c_info);
+	bool MakeErrorCode(int code, SOCKET_INFO& c_info);
 public:
 	WCHAR* MakeSetTypeChar(WCHAR type, WCHAR* data, int& len);
 	WCHAR* MakeRequestLoginData(WCHAR type, WCHAR* data, int& len);

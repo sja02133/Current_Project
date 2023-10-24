@@ -339,8 +339,6 @@ bool CMembershipDlg::SendMembershipJoin()
 	data += id + this->m_MembershipID + password + this->m_MembershipPassword;
 
 	char type = 'M';
-
-
 	
 	if (clnt_con->SendData(type, data.GetBuffer(), data.GetLength(), iter_c_info->second)) {
 		int count = 0;

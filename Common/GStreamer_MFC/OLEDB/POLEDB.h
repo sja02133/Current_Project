@@ -69,5 +69,11 @@ public:
 	// Dynamic Binding
 	//std::list<QUERY_RESULT> queryResult;
 	std::list<QUERY_RESULT> SelectTBUser(CString query);
-	std::list<QUERY_RESULT> SelectTBLogin(CString query);
+	//std::list<QUERY_RESULT> SelectTBLogin(CString query);
+	int SelectTBLogin(CString query, std::list<QUERY_RESULT>& columnName
+		, std::list<QUERY_RESULT>& columnValue);
+
+public:
+	// COMMIT
+	int Commit();
 };

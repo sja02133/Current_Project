@@ -19,6 +19,7 @@
 class CRECV_CONTROL_CLIENT {
 public:
 	bool Recv_Response(WCHAR* data, int& len, SOCKET_INFO& socket_info);
+	bool Recv_ErrorMsg(WCHAR* data, int& len, SOCKET_INFO& socket_info);
 	bool Recv_LoginSessionListInfo(WCHAR* data, int& len, SOCKET_INFO& socket_info);
 	
 	//CRECV_CONTROL_CLIENT();
@@ -63,12 +64,13 @@ public:
 	typedef struct columndata {
 		byte db_type;
 		int len = 0;
-		WCHAR* data = 0;
+		WCHAR data[10000] = { 0, };
 	}COLUMN_DATA;
 public:
 	CCLIENT_CONTROL();
 	~CCLIENT_CONTROL();
 public:
+	SOCKET_INFO* m_socketInfo;
 	bool RecvData_Client(WCHAR* data, int& len, SOCKET_INFO& socket_info);
 	//bool Send_Response(SOCKET_INFO* c_info, bool success);
 	//bool Send_Message(SOCKET_INFO* c_info);

@@ -22,7 +22,7 @@ CString string_format(const CString& format, Args ... args)
 }
 //
 
-CTCP_SOCKET::~CTCP_SOCKET()
+CTCP_SOCKET::~CTCP_SOCKET() 
 {
 	// 종료 혹은 파괴 시
 
@@ -147,7 +147,8 @@ void WINAPI Thread_Recv(void* arg)
 
 #ifdef SOCKET_CLIENT
 				CCLIENT_CONTROL clnt_con;
-				clnt_con.RecvData_Client(buf, len, *socket_info);
+				clnt_con.m_socketInfo = socket_info;
+				clnt_con.RecvData_Client(buf, len, *clnt_con.m_socketInfo);
 #else
 				CSERVER_CONTROL serv_con;
 				serv_con.RecvData_Server(buf, len, *socket_info);
@@ -269,6 +270,9 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 			//this->client_map.insert(std::make_pair(key, *c_info));	
 			this->clientInfo->pTCP_SOCKET = this;
 			this->clientInfo->checkServer = 1;
+			this->socket_map.insert(std::make_pair(key, *this->clientInfo));
+			//this->clientInfo->pTCP_SOCKET = this;
+			//this->clientInfo->checkServer = 1;
 			HANDLE hHandle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))Thread_Recv, (void*)this->clientInfo, 0, 0);
 			this->server_HANDLE = hHandle;
 		}
@@ -307,7 +311,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 		memcpy(&this->clientInfo->ipPort[0], key.GetBuffer(), key.GetLength() * 2);
 		this->clientInfo->checkSend= true;
 		this->mapKey = key;
-		//this->client_map.insert(std::make_pair(key, *c_info));	
+		this->socket_map.insert(std::make_pair(key, *this->clientInfo));
 		this->clientInfo->pTCP_SOCKET = this;
 		this->clientInfo->checkServer = 0;
 		//HANDLE hHandle = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))send_data, (void*)c_info, 0, 0);
