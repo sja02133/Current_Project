@@ -178,10 +178,47 @@ HCURSOR CGStreamerMFCDlgDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
+// 링크 에러가 나기에 이곳에 지역함수로 임시 선언해서 사용함. 
+void Get_Network_Error(int errorCode, CString* str) {
+	switch (errorCode) {
+	case -1:
+		*str = _T("WSAStartUp Failed...");
+		break;
+	case -2:
+		*str = _T("Create Socket Failed...");
+		break;
+	case -3:
+		*str = _T("Bind Failed...");
+		break;
+	case -4:
+		*str = _T("(SERVER) Listen Failed...");
+		break;
+	case -5:
+		*str = _T("(SERVER) Socket is INVALID_SOCKET");
+		break;
+	case -6:
+		*str = _T("(CLIENT) Connect Failed...");
+		break;
+	default:
+		*str = _T("Something happend error in Network connect..");
+		break;
+	}
+}
 
 void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 {
+	// 2023.12.07
+	// 먼저 서버와 연결을 시도한다.
+	int check_connect = theApp.socket.Initialize(0);
+
+	if (check_connect != 1) {
+		// 네트워크 연결 중 문제 발생..
+		CString errorMsg = _T("");
+		Get_Network_Error(check_connect,&errorMsg);
+		AfxMessageBox(errorMsg, MB_OK);
+		return;
+	}
+
 	UpdateData(TRUE);	// 값을 가져온다.
 
 	// check tcp socket success
@@ -199,7 +236,37 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 		return;
 	}
 
+	// 2023.12.05
+	// 비밀번호를 그대로 보내지 않고, md5 혹은 sha-256 형식으로 암호화하여 보내야 한다.
+	BYTE buf[SHA256_BLOCK_SIZE] = { 0, };
+	SHA256_CTX ctx;
+	sha256_init(&ctx);
+	sha256_update(&ctx, (BYTE*)this->m_loginPassword.GetBuffer(), this->m_loginPassword.GetLength());
+	sha256_final(&ctx, buf);
+
 	int length = id.GetLength() + this->m_loginID.GetLength() + password.GetLength() + this->m_loginPassword.GetLength();
+	
+	// 2023.12.06 추후 해시값으로 비밀번호 대조할 때 이곳 주석 풀어야함.
+	//int length = sizeof(WCHAR) + (sizeof(int)*2) + ((id.GetLength() + this->m_loginID.GetLength() + password.GetLength())*2) + (SHA256_BLOCK_SIZE);
+
+	//int pos = 0;
+	//char* set_loginData = (char*)malloc(length);
+	////pos += sizeof(WCHAR) + sizeof(int);		// type + total length
+	//memset(set_loginData, 0, length);
+	//
+	//WCHAR type = 'L';
+	//memcpy(&set_loginData[pos], &type, sizeof(WCHAR));
+	//pos += sizeof(WCHAR);
+	//pos += sizeof(int)*2;
+	//memcpy(&set_loginData[pos], id.GetBuffer(), id.GetLength() * 2);
+	//pos += id.GetLength()*2;
+	//memcpy(&set_loginData[pos], this->m_loginID.GetBuffer(), this->m_loginID.GetLength() * 2);
+	//pos += this->m_loginID.GetLength() * 2;
+	//memcpy(&set_loginData[pos], password.GetBuffer(), password.GetLength() * 2);
+	//pos += password.GetLength() * 2;
+	//memcpy(&set_loginData[pos], buf, SHA256_BLOCK_SIZE);
+	//pos += SHA256_BLOCK_SIZE;
+	//memcpy(&set_loginData[2], &pos, sizeof(int));
 
 	data += id + this->m_loginID + password + this->m_loginPassword;
 
@@ -215,18 +282,18 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 
 	WCHAR type = 'L';
 
-	//char&& a = 10;
 	auto iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 	if (clnt_con->SendData(type,data.GetBuffer(),data.GetLength(), iter_c_info->second)) {
+	//if (clnt_con->JustSendData(set_loginData, pos, iter_c_info->second.pTCP_SOCKET, iter_c_info->second.cSock)) {
 		int count = 0;
-
+		//free(set_loginData);
 		while (true) {
 			iter_c_info = theApp.socket.socket_map.find(theApp.socket.mapKey);
 
 			//if (iter_c_info->second.last_type == 'R' && iter_c_info->second.last_type_success == 1) {
 			//	// 성공
 			//	memcpy(iter_c_info->second.ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength() * 2);
-			
+
 			//	CChattingRoom dlg;
 			//	dlg.DoModal();
 			//	break;
@@ -244,7 +311,7 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 
 			if (iter_c_info->second.last_type == 'R' && iter_c_info->second.last_type_success == 1) {
 				// 성공
-				memcpy(iter_c_info->second.ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength()*2);
+				memcpy(iter_c_info->second.ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength() * 2);
 				//memcpy(theApp.socket.clientInfo->ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength() * 2);
 
 				CChattingRoom dlg;
@@ -272,39 +339,10 @@ void CGStreamerMFCDlgDlg::OnBnClickedButtonLogin()
 				}
 				Sleep(1000);
 			}
-
-			/*
-			if (theApp.socket.clientInfo->last_type == 'R' && theApp.socket.clientInfo->last_type_success == 1) {
-				// 성공
-				memcpy(theApp.socket.clientInfo->ID, this->m_loginID.GetBuffer(), this->m_loginID.GetLength()*2);
-				
-				CChattingRoom dlg;
-				dlg.DoModal();
-				break;
-			}
-			else if(theApp.socket.clientInfo->last_type == 'R' && theApp.socket.clientInfo->last_type_success == 0) {
-				// 실패..
-				MessageBox(L"로그인 실패");
-				break;
-			}
-			else if (theApp.socket.clientInfo->last_type == 'E' && theApp.socket.clientInfo->last_type_success == 0) {
-				// 실패..
-				theApp.MessageBox_ErrorCode(this->GetSafeHwnd(), theApp.socket.clientInfo->errorCode,
-					*theApp.socket.clientInfo, 0);
-				break;
-			}
-			else {
-				count++;
-				if (count == 10) {
-					// 2023.09.01 왜인진 모르겠지만 MessageBox를 실행하면 에러가 생긴다. 이유는?
-					// 
-					//MessageBox(L"응답 시간 초과");
-					break;
-				}
-				Sleep(1000);
-			}
-			*/
 		}
+	}
+	else {
+		//free(set_loginData);
 	}
 }
 

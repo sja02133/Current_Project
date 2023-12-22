@@ -88,7 +88,7 @@ public:
 	}
 public:
 	virtual ~CTCP_SOCKET();
-	bool Initialize(bool checkRecv);	// Recv => 1, Send => 0
+	int Initialize(bool checkRecv);	// Recv => 1, Send => 0
 	bool WSAStartUp_CHECK();
 	bool CreateSocket_CHECK();
 	bool Bind_CHECK();
@@ -99,6 +99,8 @@ public:
 	void SetInitialize_CLIENT_INFO(std::map<CString, SOCKET_INFO>::iterator iter);
 	void SetInitialize_CLIENT_INFO(SOCKET_INFO* socket_info);
 	void GetServerErrorMsg(CString& str, SOCKET_INFO& c_info);
+public:
+	void Get_Network_Error(int errorCode, CString* str);
 public:
 	WSADATA wsa;
 	SOCKET listener;

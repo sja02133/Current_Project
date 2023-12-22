@@ -184,6 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\GStreamer_MFC\byteControl\byteControl.h" />
+    <ClInclude Include="..\Common\GStreamer_MFC\ENCRYPTO\SHA256\sha256.h" />
     <ClInclude Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.h" />
     <ClInclude Include="CChattingRoom.h" />
     <ClInclude Include="CMembershipDlg.h" />
@@ -197,6 +198,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\GStreamer_MFC\byteControl\byteControl.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Common\GStreamer_MFC\ENCRYPTO\SHA256\sha256.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Common\GStreamer_MFC\_TCP_\tcpSocket.cpp">

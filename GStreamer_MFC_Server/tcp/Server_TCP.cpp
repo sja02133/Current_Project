@@ -45,10 +45,32 @@ bool CSERVER_CONTROL::Send_Response(SOCKET_INFO* c_info, bool success)
 		return false;
 }
 
+bool CSERVER_CONTROL::Set_Logout(SOCKET_INFO& c_info)
+{
+	// 임의로 로그아웃을 일으킨다.
+	WCHAR data[9000] = { 0, };
+	int pos = 0;
+
+	WCHAR type = 'O';
+	memcpy(&data[pos], &type, sizeof(WCHAR));
+	pos += 1;
+
+	CString id(c_info.ID);
+	CString totalStr = _T("id ") + id;
+
+	int length = totalStr.GetLength();
+
+	memcpy(&data[pos], &length, sizeof(int));
+	pos += sizeof(int);
+	memcpy(&data[pos], totalStr.GetBuffer(), totalStr.GetLength());
+	pos += totalStr.GetLength();
+	RecvData_Server(data, pos, c_info);
+	return true;
+}
+
 bool CSERVER_CONTROL::RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info)
 {
 	WCHAR firstByte = data[0];
-
 	bool checkResult = false;
 
 	if (c_info.pTCP_SOCKET->checkFirstStart == true && c_info.pTCP_SOCKET->client_HANDLE == NULL) {
@@ -90,7 +112,7 @@ bool CSERVER_CONTROL::RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info
 	case 'O':
 		// 로그아웃 세션 제거
 		if (Recv_LoginOutRequest(data, len, c_info)) {
-			printf("%s 로그아웃 성공\n", c_info.ID);
+			printf("%ws 로그아웃 성공\n", c_info.ID);
 			//wmemset(c_info.ID, 0, _tcsclen(c_info.ID));
 			memset(c_info.ID, 0, 100);
 			return true;	// 로그아웃 시 클라이언트에게 별다른 메시지를 보내줄 필요는 없다.
@@ -119,10 +141,15 @@ bool CSERVER_CONTROL::RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info
 		else
 			checkResult = false;
 		break;
+	case 'P':
+		Recv_Chatting_Something(data, len, c_info);
+		return true;
+		break;
 	default:
 		return true;
 		break;
 	}
+	
 
 	if (c_info.checkResponse == true && checkResult == true) {
 		// response(true)
@@ -134,7 +161,6 @@ bool CSERVER_CONTROL::RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info
 			Send_Response(&c_info, false);
 		else
 			Send_Fail(c_info, c_info.errorCode);
-			//Send_Message(&c_info);
 	}
 	else if (c_info.checkResponse == false && checkResult == false) {
 		// message(error code)
@@ -155,8 +181,6 @@ bool CSERVER_CONTROL::RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info
 	// 2023.10.23 수정사항
 	// 서버측에서 클라이언트한테 로그인 성공 Response를 보낸뒤 이곳에서 바로 로그인한 클라이언트한테
 	// 현재 유저 정보 정보를 넘기면 문제가 생긴다. 고로, 클라이언트측에서 서버측에서 온 로그인 성공 Response에 대한 응답을 보내줘야 한다?
-
-
 
 	////////////////////////////////////
 

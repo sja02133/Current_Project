@@ -30,7 +30,11 @@ CGStreamerMFCDlgApp::CGStreamerMFCDlgApp()
 
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
-	this->socket.Initialize(0);
+	
+	// 2023.12.07 수정사항.
+	// 기존 구조는 클라이언트가 실행되자마자 연결을 시도했었다.
+	// -> 이 구조를 로그인 버튼(로그인 시도 시) 클릭 시 연결하는 것으로 변경하도록 한다.
+	//this->socket.Initialize(0);
 }
 
 CGStreamerMFCDlgApp::~CGStreamerMFCDlgApp()
@@ -47,7 +51,7 @@ CGStreamerMFCDlgApp theApp;
 
 BOOL CGStreamerMFCDlgApp::InitInstance()
 {
-	// InitCommonControlsEx() is required on Windows XP if an application
+// TODO: call AfxInitRichEdit2() to initialize richedit2 library.\n"	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
 	INITCOMMONCONTROLSEX InitCtrls;

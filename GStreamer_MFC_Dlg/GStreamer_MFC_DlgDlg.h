@@ -8,6 +8,8 @@
 
 #include "tcp/Client_TCP.h"
 
+#include "../Common/GStreamer_MFC/ENCRYPTO/SHA256/sha256.h"
+
 // CGStreamerMFCDlgDlg dialog
 class CGStreamerMFCDlgDlg : public CDialog
 {
@@ -26,9 +28,9 @@ public:
 
 // Implementation
 protected:
-	HICON m_hIcon;
-
+	
 	// Generated message map functions
+HICON m_hIcon;
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
@@ -41,4 +43,5 @@ public:
 	afx_msg void OnBnClickedButtonLogin();
 	afx_msg void OnBnClickedButtonJoinMembership();
 	CCLIENT_CONTROL* clnt_con;
+	CTCP_SOCKET socket;
 };

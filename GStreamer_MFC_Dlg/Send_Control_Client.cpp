@@ -11,6 +11,7 @@ bool CSEND_CONTROL_CLIENT::MakeSendData(WCHAR proto_type, WCHAR* data, int len, 
 	case _T('M'):
 	case _T('O'):
 	case _T('C'):
+	case _T('P'):
 		sendRealData = MakeSetTypeChar(proto_type, data, len);
 		break;
 	//case _T('I'):
@@ -42,6 +43,9 @@ bool CSEND_CONTROL_CLIENT::MakeSendData(WCHAR proto_type, WCHAR* data, int len, 
 
 		//	// 2023.09.25..
 		//	// 만약 이곳에서 send를 그냥 해준다면???
+		// 2023.11.16
+		// k값이 실제 보낸 크기(length) 만큼 나오는지 확인해야한다.
+		// 고로, bool send_Done(WCHAR* buffer, int length); 같은 함수를 만들어 내부에서 제대로 보냈는지 확인하는 절차를 밟아야함.
 		int k = send(cSock, (char*)sendRealData, len * 2, 0);
 		if (k < 0)
 			return false;
@@ -53,6 +57,16 @@ bool CSEND_CONTROL_CLIENT::MakeSendData(WCHAR proto_type, WCHAR* data, int len, 
 		//k = recv(cSock, (char*)buffer, MAX_WCHAR_SIZE, 0);
 		
 	}
+	return false;
+}
+
+bool CSEND_CONTROL_CLIENT::JustSendData(char* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock)
+{
+	int k = send(cSock, data, len, 0);
+	if (k < 0)
+		return false;
+	else
+		return true;
 	return false;
 }
 

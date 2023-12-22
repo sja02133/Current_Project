@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by GStreamerMFCDlg.rc
 //
+#define IDOK2                           3
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
@@ -27,8 +28,8 @@
 #define IDC_BUTTON_LOGIN                1008
 #define IDC_BUTTON_MEMBERSHIP_JOIN      1009
 #define IDC_STATIC_ID                   1010
-#define IDC_LIST_LOGIN_SESSION_ID       1011
 #define IDC_LIST_IDLIST                 1012
+#define IDC_BUTTON_SEND_MESSAGE         1013
 
 // Next default values for new objects
 // 
@@ -36,7 +37,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1013
+#define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

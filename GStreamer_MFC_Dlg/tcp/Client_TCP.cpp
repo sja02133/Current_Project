@@ -57,6 +57,10 @@ bool CCLIENT_CONTROL::RecvData_Client(WCHAR* data, int& len, SOCKET_INFO& socket
 		memcpy(iter->second.sendData, data, len);
 		iter->second.sendDataLength = len;
 		break;
+	case 'P':
+		memcpy(iter->second.sendData, data, len);
+		iter->second.sendDataLength = len;
+		break;
 	}
 
 	iter->second.last_type = firstByte;

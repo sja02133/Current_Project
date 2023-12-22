@@ -36,6 +36,9 @@
     <ClCompile Include="..\Common\GStreamer_MFC\OLEDB\POLEDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\GStreamer_MFC\ENCRYPTO\SHA256\sha256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="login.h">
@@ -52,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\GStreamer_MFC\OLEDB\DBStructure.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\GStreamer_MFC\ENCRYPTO\SHA256\sha256.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

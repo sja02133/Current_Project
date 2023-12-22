@@ -8,6 +8,8 @@
 #include "../../../GStreamer_MFC_Server/Server_TCP.h"
 #include "../../../GStreamer_MFC_Dlg/tcp/Client_TCP.h"
 
+#include <mutex>
+
 void WINAPI Thread_Recv(void* arg);
 
 // do not modify this function!
@@ -150,17 +152,35 @@ void WINAPI Thread_Recv(void* arg)
 				clnt_con.m_socketInfo = socket_info;
 				clnt_con.RecvData_Client(buf, len, *clnt_con.m_socketInfo);
 #else
+				std::mutex server_mutex;
+				server_mutex.lock();
 				CSERVER_CONTROL serv_con;
 				serv_con.RecvData_Server(buf, len, *socket_info);
+				server_mutex.unlock();
 #endif
 			}
 			else if (len < 0) {
 				// lose connection
-				return;
+				// 로그아웃 처리를 해주어야 한다.
+#ifdef SOCKET_CLIENT
+				// 서버와의 연결 끊겼을 경우 클라이언트에서의 처리.
+#else
+				CSERVER_CONTROL serv_con;
+				serv_con.Set_Logout(*socket_info);
+#endif
+				//return;
 			}
 			else {
 				// other problem OR 0
 				int aaa = 0;
+#ifdef SOCKET_CLIENT
+				// 서버와의 연결 끊겼을 경우 클라이언트에서의 처리.
+#else
+				CSERVER_CONTROL serv_con;
+				serv_con.Set_Logout(*socket_info);
+				closesocket(socket_info->cSock);
+				
+#endif
 			}
 		}
 	}
@@ -227,20 +247,20 @@ bool test = false;
 //	}
 //}
 
-bool CTCP_SOCKET::Initialize(bool checkRecv)
+int CTCP_SOCKET::Initialize(bool checkRecv)
 {
 	if (!WSAStartUp_CHECK()) {
-		return false;
+		return -1;
 	}
 	if (!CreateSocket_CHECK()) {
-		return false;
+		return -2;
 	}
 	if (!Bind_CHECK(checkRecv)) {
-		return false;
+		return -3;
 	}
 	if (checkRecv) {
 		if (!Listen_CHECK()) {
-			return false;
+			return -4;
 		}
 	}
 
@@ -251,7 +271,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 			if (client_sock == INVALID_SOCKET) {
 				closesocket(listener);
 				WSACleanup();
-				return false;
+				return -5;
 			}
 			//printf("Accept!\n");
 			this->clientInfo = new SOCKET_INFO;
@@ -293,7 +313,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 			}
 		}
 		if (check_connect == SOCKET_ERROR)
-			return false;
+			return -6;
 
 		Sleep(DELAY_TIME);
 
@@ -322,7 +342,7 @@ bool CTCP_SOCKET::Initialize(bool checkRecv)
 		//if(hHandle != nullptr)
 		//	this->client_map.at(key).clientToSendThread = hHandle;
 	}
-	return true;
+	return 1;
 }
 
 
@@ -509,4 +529,30 @@ bool CTCP_SOCKET::SendData(WCHAR type, WCHAR* data, int len)
 	//
 
 	return true;
+}
+
+void CTCP_SOCKET::Get_Network_Error(int errorCode, CString* str) {
+	switch (errorCode) {
+	case -1:
+		*str = _T("WSAStartUp Failed...");
+		break;
+	case -2:
+		*str = _T("Create Socket Failed...");
+		break;
+	case -3:
+		*str = _T("Bind Failed...");
+		break;
+	case -4:
+		*str = _T("(SERVER) Listen Failed...");
+		break;
+	case -5:
+		*str = _T("(SERVER) Socket is INVALID_SOCKET");
+		break;
+	case -6:
+		*str = _T("(CLIENT) Connect Failed...");
+		break;
+	default:
+		*str = _T("Something happend error in Network connect..");
+		break;
+	}
 }

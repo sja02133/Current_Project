@@ -48,6 +48,9 @@
     <ClInclude Include="..\Common\GStreamer_MFC\byteControl\byteControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\GStreamer_MFC\ENCRYPTO\SHA256\sha256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GStreamer_MFC_Dlg.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Send_Control_Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\GStreamer_MFC\ENCRYPTO\SHA256\sha256.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

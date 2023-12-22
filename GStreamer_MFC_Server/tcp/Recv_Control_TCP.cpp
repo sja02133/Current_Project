@@ -4,6 +4,9 @@
 
 #include "../../Common/GStreamer_MFC/byteControl/byteControl.h"
 
+#define SAVE_FILE_DIRECTORY _T(".\\chatting_file_storage")
+#define SAVE_FILE_PATH _T(".\\chatting_file_storage\\")
+
 // 서버측 커스텀
 
 bool CRECV_CONTROL_SERVER::Recv_DeleteLoginSessionAll()
@@ -213,16 +216,16 @@ bool CRECV_CONTROL_SERVER::Recv_LoginRequest(WCHAR* data, int& len, SOCKET_INFO&
 	if (rowCount > 0 && checkInsert) {
 		// 로그인 성공 시엔 SOCKET_INFO& c_info 내의 ID에 이 함수 내의 id를 작성할 것.
 		memcpy(&c_info.ID[0], id.GetBuffer(), id.GetLength() * 2);
-		printf("%s 로그인!\n", c_info.ID);
+		printf("%ws 로그인!\n", c_info.ID);
 		return true;
 	}
 	else if (rowCount > 0 && checkAlreadyExist) {
-		printf("%s은 로그인 세션을 가지고 있습니다.\n", c_info.ID);
+		printf("%ws은 로그인 세션을 가지고 있습니다.\n", c_info.ID);
 		wmemset(&c_info.ID[0], 0, id.GetLength());
 		return false;
 	}
 	else {
-		printf("%s 로그인 실패!\n", c_info.ID);
+		printf("%ws 로그인 실패!\n", c_info.ID);
 		wmemset(&c_info.ID[0], 0, id.GetLength());
 		return false;
 	}
@@ -566,6 +569,214 @@ bool CRECV_CONTROL_SERVER::Recv_LoginSessionList(WCHAR* data, int& len, SOCKET_I
 
 	memcpy(&c_info.sendData[1], &pos, sizeof(int));
 	c_info.checkResponse = false;
+
+	return true;
+}
+
+bool CRECV_CONTROL_SERVER::Recv_Chatting_Something(WCHAR* data, int& len, SOCKET_INFO& c_info)
+{
+	// 현재 들어온 채팅 타입에 따른 다른 처리를 해야한다.
+
+	// message
+	int pos = 0;
+	
+	pos++;	//pass to type
+
+	pos += sizeof(int);	// total length
+
+	pos += sizeof(int);	// message info length
+
+	switch (data[pos]) {
+	case _T('M'):
+	{
+		// just message
+		Recv_Chatting_Message(data, len, c_info);
+		break;
+	}
+	case _T('F'):
+	{
+		// file
+		Recv_Chatting_File(data, len, c_info);
+		break;
+	}
+	default:
+	{
+		// ???
+		return false;
+	}
+	}
+	return true;
+}
+
+bool CRECV_CONTROL_SERVER::Recv_Chatting_Message(WCHAR* data, int& len, SOCKET_INFO& c_info)
+{
+	// 채팅 메시지 수신 받으면 일단 바로 다른 클라이언트들에게 그대로 보내주자..
+
+	for (auto iter = c_info.pTCP_SOCKET->socket_map.begin(); iter != c_info.pTCP_SOCKET->socket_map.end(); iter++) {
+		send(iter->second.cSock,(char*)data,len,0);
+	}
+	return true;
+}
+
+bool CRECV_CONTROL_SERVER::Recv_Chatting_File(WCHAR* data, int& len, SOCKET_INFO& c_info)
+{
+	// 파일 저장을 실시하여야 한다.
+
+	// 파일 경로 : ../chatting_file_storage 의 하단 경로로 아이디 명의 파일을 저장한다.
+
+	int pos = 0;
+
+	pos++;	//pass to type
+
+	int totalLength = 0;
+	memcpy(&totalLength, &data[pos], sizeof(int));
+	pos += sizeof(int);	// total length
+	
+	// message info
+	//message info length
+	int messageInfoTotalLength = 0;
+	memcpy(&messageInfoTotalLength, &data[pos], sizeof(int));
+	pos += sizeof(int);	// message info length
+
+	// message type
+	WCHAR m_type = 0;
+	memcpy(&m_type, &data[pos], sizeof(WCHAR));
+	pos += 1;
+
+	// send id length
+	short sendIDLength = 0;
+	memcpy(&sendIDLength, &data[pos], sizeof(short));
+	pos += sizeof(short);
+
+	//send id
+	CString id = _T("");
+	for (short i = 0; i < sendIDLength; i++,pos++) {
+		id += data[pos];
+	}
+
+	pos++;	//pass to \0
+
+	// file count
+	byte fileCount = 0;
+	memcpy(&fileCount, &data[pos], sizeof(byte));
+	pos += sizeof(byte);
+
+	// 확장자명
+	std::list<CString> extension_list;
+	for (byte i = 0; i < fileCount; i++,pos++) {
+		CString extension = _T("");
+		while (data[pos] != '\0') {
+			extension += data[pos];
+			pos++;
+		}
+		extension_list.push_back(extension);
+	}
+
+	//pos++;	//pass to \0
+	std::list<CString> fileName_list;
+	for (int i = 0; i < fileCount; i++) {
+		// file name length
+		short fileNameLength = 0;
+		memcpy(&fileNameLength, &data[pos], sizeof(short));
+		pos += sizeof(short);
+		// file name
+		int j = 0;
+		CString fileName = _T("");
+		for (j = 0; j < fileNameLength; j++) {
+			fileName += data[pos+j];
+		}
+		fileName_list.push_back(fileName);
+		pos += j;
+	}
+
+	// Data
+	// Data size
+
+	//if (pos != totalLength) {
+	//	// error....
+	//	printf("File 업로드 에러..\n");
+	//	return false;
+	//}
+	
+
+	// 저장 경로로 이동해서 해당 지역의 파일을 보내온 아이디의 디렉터리가 있는지 검사하고 없으면 생성.
+	if (GetFileAttributesW(SAVE_FILE_DIRECTORY) == 0xFFFFFFFF) {
+		// 디렉토리가 없으면..
+		if (!CreateDirectoryW(SAVE_FILE_DIRECTORY, NULL)) {
+			DWORD error = GetLastError();
+			if (error == ERROR_ALREADY_EXISTS)
+				printf("폴더가 이미 존재\n");
+			else if (error == ERROR_PATH_NOT_FOUND)
+				printf("하나 이상의 중간 디렉터리 존재하지 않습니다. 이 함수는 경로에 최종 디렉터리만 만듭니다.\n");
+			int kkk = 0;
+		}
+	}
+	
+	CString save_id_path = SAVE_FILE_PATH + id;
+	if (GetFileAttributesW(save_id_path) == 0xFFFFFFFF) {
+		// 디렉토리가 없으면..
+		if (!CreateDirectoryW(save_id_path.GetBuffer(), NULL)) {
+			DWORD error = GetLastError();
+			if (error == ERROR_ALREADY_EXISTS)
+				printf("폴더가 이미 존재\n");
+			else if (error == ERROR_PATH_NOT_FOUND)
+				printf("하나 이상의 중간 디렉터리 존재하지 않습니다. 이 함수는 경로에 최종 디렉터리만 만듭니다.\n");
+			int kkk = 0;
+		}
+	}
+	save_id_path += _T("\\");
+
+	// 파일 데이터부 추출 완료...
+
+	std::list<CString> fileNameWithExtension_list;
+
+	for (auto iter = fileName_list.begin(),iter2 = extension_list.begin(); 
+		(iter != fileName_list.end()) && (iter2 != extension_list.end()) ; iter++,iter2++) {
+		// 파일 생성 루틴..
+		CString fileNameWithExtension = iter->GetBuffer();
+		fileNameWithExtension += _T('.');
+		fileNameWithExtension += iter2->GetBuffer();
+		fileNameWithExtension = save_id_path + fileNameWithExtension;
+		fileNameWithExtension_list.push_back(fileNameWithExtension);
+	}
+
+	for (auto iter = fileNameWithExtension_list.begin(); iter != fileNameWithExtension_list.end(); iter++) {
+		long dataSize = 0;
+		memcpy(&dataSize, &data[pos], sizeof(long));
+		//pos += sizeof(long);
+		int file_pos = sizeof(long);
+		char* file_data = (char*)malloc(dataSize+sizeof(long));
+		memset(&file_data[0], 0, dataSize);
+		memcpy(&file_data[0], (char*)&data[pos], (size_t)(dataSize+sizeof(long)));
+		
+		if (dataSize % 2 != 0) {
+			// 파일 사이즈가 홀수
+			pos += ((dataSize+1) + sizeof(long))/2;
+		}
+		else {
+			// 파일 사이즈가 짝수
+			pos += (dataSize + sizeof(long)) / 2;
+		}
+		
+		FILE* pFile;
+		_wfopen_s(&pFile, iter->GetBuffer(), _T("w"));
+		fwrite(&file_data[file_pos], 1, dataSize, pFile);
+		fclose(pFile);
+
+		free(file_data);
+	}
+	
+
+	// 2023.12.01
+
+	// 클라이언트 <-> 서버 간에 파일을 송수신 받을 때, 클라이언트측에선 새로운 파일 전송 전용 소켓을 만들어서 사용하는 방식으로 바꿔야 한다.
+	// 
+
+	// --
+
+
+
+
 
 	return true;
 }

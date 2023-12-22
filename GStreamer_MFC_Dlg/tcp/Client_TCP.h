@@ -34,13 +34,17 @@ public:
 	//bool Recv_LoginSessionList(WCHAR* data, int& len, SOCKET_INFO& c_info);
 };
 
+#define MTU_MAX 1500
+
 class CSEND_CONTROL_CLIENT {
 public:
 	bool MakeSendData(WCHAR proto_type, WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock);
-//	bool SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
+	bool JustSendData(char* data, int len, CTCP_SOCKET* pTCP_SOCKET, SOCKET cSock);
+	//	bool SetClientInfo_sendData(WCHAR* data, int len, CTCP_SOCKET* pTCP_SOCKET);
 public:
 	WCHAR* MakeSetTypeChar(WCHAR type, WCHAR* data, int& len);
-//	WCHAR* MakeRequestLoginData(WCHAR type, WCHAR* data, int& len);
+
+	//	WCHAR* MakeRequestLoginData(WCHAR type, WCHAR* data, int& len);
 //	WCHAR* MakeRequestIDExist(WCHAR type, WCHAR* data, int& len);
 //	WCHAR* MakeRequestMembershipJoin(WCHAR type, WCHAR* data, int& len);
 //	WCHAR* MakeRequestLogOut(WCHAR type, WCHAR* data, int& len);

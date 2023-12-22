@@ -16,6 +16,8 @@
 
 #include <atlstr.h>
 
+
+
 class CRECV_CONTROL_SERVER {
 public:
 	//CRECV_CONTROL_SERVER();
@@ -28,6 +30,14 @@ public:
 	bool Recv_LoginOutRequest(WCHAR* data, int& len, SOCKET_INFO& c_info);
 	bool Recv_AlreadyLoginSessionExist(WCHAR* data, int& len, SOCKET_INFO& c_info);
 	bool Recv_LoginSessionList(WCHAR* data, int& len, SOCKET_INFO& c_info);
+	bool Recv_Chatting_Something(WCHAR* data, int& len, SOCKET_INFO& c_info);
+	bool Recv_Chatting_File(WCHAR* data, int& len, SOCKET_INFO& c_info);
+	bool Recv_Chatting_Message(WCHAR* data, int& len, SOCKET_INFO& c_info);
+
+	typedef struct recv_file_info {
+		long file_size;
+		char* file_data;
+	}RECV_FILE_INFO;
 };
 
 
@@ -64,5 +74,9 @@ public:
 	bool RecvData_Server(WCHAR* data, int& len, SOCKET_INFO& c_info);
 	bool Send_Response(SOCKET_INFO* c_info, bool success);
 	bool Send_Message(SOCKET_INFO* c_info);
+
+	// 2023.11.03
+	// 클라이언트 연결 끊겼을 경우엔, 임의로 로그아웃 메시지를 만들어 넘겨준다.
+	bool Set_Logout(SOCKET_INFO& c_info);
 };
 
